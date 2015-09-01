@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TS Query Counter</title>
+    <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
+    <!--  Build Date: Mon Aug 31 2015 18:35:24 GMT-0700 (PDT) -->
+    
+    <script type="text/javascript">
+        var APP_BUILD_DATE = "Mon Aug 31 2015 18:35:24 GMT-0700 (PDT)";
+        var CHECKSUM = 4526773729;
+    </script>
+    
+    <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function() {
+             
+Ext.define('Rally.technicalservices.querycounter.Settings', {
+    singleton: true,
+
+    getFields: function(config) {
+        
+        var items = [];
+        
+        items.push({
+            name: 'counterArtifactType',
+            xtype: 'tsrecordtypecombobox',
+            margin: '10px 0 0 0',
+            fieldLabel: 'Record Type',
+            valueField: 'TypePath',
+            readyEvent: 'ready' 
+        });
+        
+        items.push({
+            xtype: 'textarea',
+            fieldLabel: 'Query',
+            name: 'counterQuery',
+            anchor: '100%',
+            cls: 'query-field',
+            margin: '0 70 0 0',
+            plugins: [
+                {
+                    ptype: 'rallyhelpfield',
+                    helpId: 194
+                },
+                'rallyfieldvalidationui'
+            ],
+            validateOnBlur: false,
+            validateOnChange: false,
+            validator: function(value) {
+                try {
+                    if (value) {
+                        Rally.data.wsapi.Filter.fromQueryString(value);
+                    }
+                    return true;
+                } catch (e) {
+                    return e.message;
+                }
+            }
+        });
+        
+        items.push({
+            xtype:'container',
+            html:'Display Text<br/><span style="color:#999999;"><i>Use {#} to place the results of the count.</i></span>'
+        });
+        
+        items.push({
+            name:'counterDisplayText',
+            xtype:'rallyrichtexteditor',
+            margin: '10 70 0 80',
+            fieldLabel: 'Informational Text'
+        });
+        
+
+        return items;
+    }
+});
+/**
+ * A link that pops up a version dialog box
+ */
+
+Ext.define('Rally.technicalservices.InfoLink',{
+    extend: 'Rally.ui.dialog.Dialog',
+    alias: 'widget.tsinfolink',
+    
+    /**
+     * @cfg {String} informationHtml
+     * Additional text to be displayed on the popup dialog (for exmaple,
+     * to add a description of the app's use or functionality)
+     */
+    informationHtml: null,
+    
+    /**
+     * 
+     * cfg {String} title
+     * The title for the dialog box
+     */
+    title: "Build Information",
+    
+    defaults: { padding: 5, margin: 5 },
+
+    closable: true,
+     
+    draggable: true,
+
+    autoShow: true,
+   
+    width: 350, 
+    
+    initComponent: function() {
+        var id = Ext.id(this);
+        this.title =  "<span class='icon-help'> </span>" + this.title;
+        this.callParent(arguments);
+    },
+    
+    _generateChecksum: function(string){
+        var chk = 0x12345678,
+            i;
+        string = string.replace(/var CHECKSUM = .*;/,"");
+        string = string.replace(/\s/g,"");  //Remove all whitespace from the string.
+        
+        for (i = 0; i < string.length; i++) {
+            chk += (string.charCodeAt(i) * i);
+        }
+    
+        return chk;
+    },
+    
+    _checkChecksum: function(container) {
+        var deferred = Ext.create('Deft.Deferred');
+        console.log("_checkChecksum", container);
+        var me = this;
+        
+        Ext.Ajax.request({
+            url: document.URL,
+            params: {
+                id: 1
+            },
+            success: function (response) {
+                text = response.responseText;
+                if ( CHECKSUM ) {
+                    if ( CHECKSUM !== me._generateChecksum(text) ) {
+                        console.log("Checksums don't match!");
+                        deferred.resolve(false);
+                        return;
+                    }
+                }
+                deferred.resolve(true);
+            }
+        });
+        
+        return deferred.promise;
+    },
+    
+    afterRender: function() {
+        var app = Rally.getApp();
+        
+        if (! app.isExternal() ) {
+                
+            this._checkChecksum(app).then({
+                scope: this,
+                success: function(result){
+                    if ( !result ) {
+                        this.addDocked({
+                            xtype:'container',
+                            cls: 'build-info',
+                            padding: 2,
+                            html:'<span class="icon-warning"> </span>Checksums do not match'
+                        });
+                    }
+                },
+                failure: function(msg){
+                    console.log("oops:",msg);
+                }
+            });
+        } else {
+            this.addDocked({
+                xtype:'container',
+                cls: 'build-info',
+                padding: 2,
+                html:'... Running externally'
+            });
+        }
+        this.callParent(arguments);
+    },
+    
+    beforeRender: function() {
+        var me = this;
+        this.callParent(arguments);
+
+        if (this.informationHtml) {
+            this.addDocked({
+                xtype: 'component',
+                componentCls: 'intro-panel',
+                padding: 2,
+                html: this.informationHtml
+            });
+        }
+        
+        this.addDocked({
+            xtype:'container',
+            cls: 'build-info',
+            padding: 2,
+            html:"This app was created by the Rally Technical Services Team."
+        });
+        
+        if ( APP_BUILD_DATE ) {
+            this.addDocked({
+                xtype:'container',
+                cls: 'build-info',
+                padding: 2,
+                html:'Build date/time: ' + APP_BUILD_DATE
+            });
+        }
+    }
+});
+
+/*
+ */
+Ext.define('Rally.technicalservices.Logger',{
+    constructor: function(config){
+        Ext.apply(this,config);
+    },
+    log: function(args){
+        var timestamp = "[ " + Ext.util.Format.date(new Date(), "Y-m-d H:i:s.u") + " ]";
+        //var output_args = arguments;
+        //output_args.unshift( [ "[ " + timestamp + " ]" ] );
+        //output_args = Ext.Array.push(output_args,arguments);
+        
+        var output_args = [];
+        output_args = Ext.Array.push(output_args,[timestamp]);
+        output_args = Ext.Array.push(output_args, Ext.Array.slice(arguments,0));
+
+        window.console && console.log.apply(console,output_args);
+    }
+
+});
+
+/**
+ * A ComboBox showing a list of Rally record types.
+ *
+ *     @example
+ *     Ext.create('Ext.Container', {
+ *         items: [{
+ *             xtype: 'tsrecordtypecombobox'
+ *          }],
+ *          renderTo: Ext.getBody().dom
+ *     });
+ */
+Ext.define('Rally.technicalservices.RecordTypeComboBox', {
+    
+    extend: 'Rally.ui.combobox.ComboBox',
+    alias: 'widget.tsrecordtypecombobox',
+
+    constructor: function(config) {
+        var defaultConfig = {
+            defaultSelectionPosition: 'last',
+            editable: false,
+            fieldLabel: 'Type:',
+            labelWidth: 30,
+            context: Rally.environment.getContext(),
+            storeConfig: {
+                autoLoad: false,
+                remoteFilter: true,
+                model: Ext.identityFn('TypeDefinition'),
+                sorters: {
+                    property: 'Name',
+                    direction: 'Asc'
+                },
+                filters: [
+                    {
+                        property: 'Creatable',
+                        operator: '=',
+                        value: 'true'
+                    }
+                ]
+            }
+        };
+
+        if (config.storeConfig) {
+            delete config.storeConfig.autoLoad;
+
+            if (config.storeConfig.additionalFilters) {
+                defaultConfig.storeConfig.filters = defaultConfig.storeConfig.filters.concat(config.storeConfig.additionalFilters);
+            }
+        }
+
+        this.callParent([Ext.Object.merge(defaultConfig, config)]);
+    },
+
+    initComponent: function() {
+        this.callParent();
+
+        Deft.Promise.all([this._loadStore()]).then({
+            success: function (results) {
+                this.on('change', this._onValueChange, this);
+                this.onReady({ preferencesLoaded: true, record: this.getRecord() });
+            },
+            scope: this
+        });
+    },
+
+    onReady: function (options) {
+        options = options || {};
+
+        // Only call the base onReady (which fires the 'ready' event, when both the store and preferences have loaded
+        if (options.preferencesLoaded) {
+            this.fireEvent('select', options.record);
+            this.callParent(arguments);
+        }
+    },
+
+    getSelectedType: function () {
+        return this.getTypeFromRef(this.getValue());
+    },
+
+    getTypeFromRef: function (typeRef) {
+        return this.getStore().findRecord('_ref', typeRef);
+    },
+
+    getTypeWithOrdinal: function(ordinal) {
+        return this.getStore().findRecord("Ordinal", ordinal);
+    },
+
+    getAllTypeNames: function () {
+        return _.map(this.getStore().getRecords(), function (type) { return type.get('TypePath'); });
+    },
+
+    _onValueChange: function(field, newValue) {
+        this.savePreference(newValue);
+    },
+
+    _loadStore: function () {
+        var deferred = new Deft.Deferred();
+
+        this.store.load({
+            callback: function (records, operation, success) {
+                if (success) {
+                    deferred.resolve();
+                } else {
+                    deferred.reject();
+                }
+            },
+            scope: this
+        });
+
+        return deferred.promise;
+    },
+
+    getPreference: function() {
+        var deferred = new Deft.Deferred();
+
+        Rally.data.PreferenceManager.load(Ext.apply(this._getPreferenceConfig(), {
+            success: function(prefs) {
+                deferred.resolve(prefs[this._getPreferenceName()]);
+            },
+            scope: this
+        }));
+
+        return deferred.promise;
+    },
+
+    savePreference: function(value) {
+        var settings = {};
+        settings[this._getPreferenceName()] = value;
+
+        Rally.data.PreferenceManager.update(Ext.apply(this._getPreferenceConfig(), {
+            settings: settings
+        }));
+    },
+
+    _getPreferenceConfig: function () {
+        var config = {
+            filterByUser: true,
+            filterByName: this._getPreferenceName()
+        };
+
+        if (this.context.get && this.context.get('appID')) {
+            config.appID = this.context.get('appID');
+        }
+
+        return config;
+    },
+
+    _getPreferenceName: function() {
+        return this.preferenceName + '-' + this.context.getWorkspace().ObjectID;
+    },
+
+    _isPrefValueInStore: function (pref) {
+        return this.store.findRecord(this.valueField, pref);
+    }
+});
+Ext.define("TSQueryCounter", {
+    extend: 'Rally.app.App',
+    componentCls: 'app',
+    logger: new Rally.technicalservices.Logger(),
+    defaults: { margin: 10 },
+    items: [
+        {xtype:'container',itemId:'display_box',tpl:'<tpl>{displayText}</tpl>'}
+    ],
+    
+    config: {
+        defaultSettings: {
+            counterArtifactType: 'Defect',
+            counterQuery: '( ObjectID > 0 )',
+            counterDisplayText: '{#}<br/><em>Use the gear to make App Settings...</em>'
+        }
+    },
+    
+    launch: function() {
+        var me = this;
+        this.setLoading("Counting...");
+        
+        var artifactType = this.getSetting('counterArtifactType');
+        var filters = [];
+        var query = this.getSetting('counterQuery');
+        
+        if ( !Ext.isEmpty(query) ) {
+            filters = Rally.data.wsapi.Filter.fromQueryString(query);
+        }
+        
+        var display_box = this.down('#display_box');
+        
+        this._loadRecordCount(artifactType, filters).then({
+            scope: this,
+            success: function(value) {
+                this._updateDisplay(value);
+            },
+            failure: function(error_message){
+                Ext.Msg.alert('Counter Problem',error_message);
+            }
+        }).always(function() {
+            me.setLoading(false);
+        });
+    },
+    
+    
+    _loadRecordCount: function(model, filters){
+        var deferred = Ext.create('Deft.Deferred');
+        var me = this;
+        this.logger.log("Starting load:",model);
+          
+        Ext.create('Rally.data.wsapi.Store', {
+            model: model,
+            filters: filters,
+            limit: 1,
+            pageSize: 1
+        }).load({
+            callback : function(records, operation, successful) {
+                if (successful){
+                    me.logger.log('result:', operation);
+                    
+                    var result = operation.resultSet.totalRecords || 0;
+                    deferred.resolve(result);
+                } else {
+                    me.logger.log("Failed: ", operation);
+                    deferred.reject("Couldn't Load: " + operation.error.errors.join('. '));
+                }
+            }
+        });
+        return deferred.promise;
+    },
+    
+    _updateDisplay: function(value){
+        this.logger.log('_updateDisplay',value);
+        var display_string = this.getSetting('counterDisplayText').replace(/\{#}/,value);
+        
+        this.down('#display_box').update(display_string);
+    },
+    
+    getOptions: function() {
+        return [
+            {
+                text: 'About...',
+                handler: this._launchInfo,
+                scope: this
+            }
+        ];
+    },
+    
+    _launchInfo: function() {
+        if ( this.about_dialog ) { this.about_dialog.destroy(); }
+        this.about_dialog = Ext.create('Rally.technicalservices.InfoLink',{
+            informationHtml: "Record Type: " + this.getSetting('counterArtifactType') 
+                + "<br/>With Query: " + this.getSetting('counterQuery') + "<br/>"
+        });
+    },
+    
+    isExternal: function(){
+        return typeof(this.getAppId()) == 'undefined';
+    },
+    
+    getSettingsFields: function() {
+        return Rally.technicalservices.querycounter.Settings.getFields();
+    },
+        
+    //onSettingsUpdate:  Override
+    onSettingsUpdate: function (settings){
+        this.logger.log('onSettingsUpdate',settings);
+//        Ext.apply(this, settings);
+        this.launch();
+    }
+});
+
+            
+               Rally.launchApp('TSQueryCounter', {
+                   name: 'TS Query Counter'
+               });
+        });
+    </script>
+    
+    <style type="text/css">
+
+.app {
+}
+.tsinfolink {
+    position:absolute;
+    right:0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    text-align: center;
+    color: white;
+    background: #C0C0C0;
+    border-style: solid;
+    border-width: 1px;
+    margin-top: 25px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+    </style>
+
+</head>
+<body></body>
+</html>
