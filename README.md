@@ -1,6 +1,23 @@
 #TS Query Counter
 
+This is a simple app that lets you set up a query with some explanatory 
+text so that it can display a simple count of the items that match the
+query.
+
+![example](doc/query_counter_display.png "Example Display")
+
+To display the count, use the App Settings... to insert text (and formatting)
+in the rich text editing field.  The app will replace where the user puts
+"{#}" with the count.
+
+![example](doc/query_counter_config.png "Example Configuration")
+
 ## Development Notes
+
+* Using the Rally rich text editor to get easy formatting, but it doesn't give
+us a lot of options for size of the font.
+* TODO: If a user does some formatting that interferes with {#}, it may not
+populate properly because we're just doing a simple replace.  
 
 ### First Load
 
