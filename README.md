@@ -12,6 +12,10 @@ in the rich text editing field.  The app will replace where the user puts
 
 ![example](doc/query_counter_config.png "Example Configuration")
 
+If this app is on a Timebox Scoped page, then the appropriate timebox filter 
+will be applied if the Timebox is valid for the selected model.  If the Timebox
+is not valid for the selected model, then the Timebox scope will be ignored.  
+
 ## Development Notes
 
 * Using the Rally rich text editor to get easy formatting, but it doesn't give
