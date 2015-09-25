@@ -3,10 +3,10 @@
 <head>
     <title>TS Query Counter</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Mon Aug 31 2015 18:35:24 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Sep 25 2015 13:55:08 GMT-0600 (MDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Aug 31 2015 18:35:24 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Fri Sep 25 2015 13:55:08 GMT-0600 (MDT)";
         var CHECKSUM = [%= checksum %];
     </script>
     

@@ -16,20 +16,65 @@ Ext.define("TSQueryCounter", {
     },
     
     launch: function() {
+        this._reloadModel();
+    },
+    onTimeboxScopeChange: function(timebox){
+        this.logger.log('onTimeboxScopeChange', timebox.getQueryFilter().toString());
+        this._runApp(timebox);
+    },
+    _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType){
+        if (timeboxScope){
+            this.logger.log('_timeboxScopeIsValidForArtifactType',timeboxScope.getType(), this.model, this.model.getField("Iteration"), this.model.getField("Release"), timeboxScope.getQueryFilter().toString());
+            var field = "Release";
+            if (timeboxScope.getType() == 'iteration'){
+                field = "Iteration";
+            }
+            if (this.model.getField(field)){
+                this.logger.log('TimeboxScope', timeboxScope.getType(), 'is valid for', artifactType);
+                return true;
+            }
+            this.logger.log('TimeboxScope', timeboxScope.getType(), 'NOT valid for', artifactType);
+
+            return false;
+        }
+        this.logger.log('No Timebox Scope');
+        return true;
+    },
+    _reloadModel: function(){
+        //Load the model so that we can test if it is valid for the timebox scope
+        Rally.data.ModelFactory.getModel({
+            type: this.getSetting('counterArtifactType'),
+            scope: this,
+            success: function(model) {
+                this.model = model;
+                this._runApp(this.getContext().getTimeboxScope());
+            }
+        });
+    },
+    _runApp: function(timeboxScope){
         var me = this;
         this.setLoading("Counting...");
-        
+
         var artifactType = this.getSetting('counterArtifactType');
-        var filters = [];
         var query = this.getSetting('counterQuery');
-        
-        if ( !Ext.isEmpty(query) ) {
-            filters = Rally.data.wsapi.Filter.fromQueryString(query);
+
+        var filters = null;
+        if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)){
+            filters = timeboxScope.getQueryFilter();
+            this.logger.log('Using Timebox Scope >>', filters.toString());
         }
-        
+
+        if ( !Ext.isEmpty(query) ) {
+            if (filters){
+                filters = filters.and(Rally.data.wsapi.Filter.fromQueryString(query));
+            } else {
+                filters = Rally.data.wsapi.Filter.fromQueryString(query);
+            }
+        }
+
         var display_box = this.down('#display_box');
-        
-        this._loadRecordCount(artifactType, filters).then({
+
+        this._loadRecordCount(artifactType, filters || []).then({
             scope: this,
             success: function(value) {
                 this._updateDisplay(value);
@@ -42,11 +87,10 @@ Ext.define("TSQueryCounter", {
         });
     },
     
-    
     _loadRecordCount: function(model, filters){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
-        this.logger.log("Starting load:",model);
+        this.logger.log("Starting load: model>>",model, 'filters>>', filters.toString());
           
         Ext.create('Rally.data.wsapi.Store', {
             model: model,
@@ -106,6 +150,6 @@ Ext.define("TSQueryCounter", {
     onSettingsUpdate: function (settings){
         this.logger.log('onSettingsUpdate',settings);
 //        Ext.apply(this, settings);
-        this.launch();
+        this._runApp();
     }
 });
