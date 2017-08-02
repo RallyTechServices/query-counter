@@ -1,3 +1,5 @@
+.DS_Store
+.grunt/
 grunt/
 /node_modules/
 auth.json
