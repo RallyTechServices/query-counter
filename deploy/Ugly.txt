@@ -3,13 +3,13 @@
 <head>
     <title>TS Query Counter</title>
     <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Oct 31 2017 14:47:50 GMT-0600 (MDT) -->
+    <!--  Build Date: Tue Oct 31 2017 14:50:04 GMT-0600 (MDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Oct 31 2017 14:47:50 GMT-0600 (MDT)";
+        var APP_BUILD_DATE = "Tue Oct 31 2017 14:50:04 GMT-0600 (MDT)";
         var STORY    = "N/A";
         var BUILDER  = "corkr03";
-        var CHECKSUM = 16287756590;
+        var CHECKSUM = 16254992524;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
@@ -54,7 +54,6 @@
 .default-counter {
    font-family: ProximaNova, Helvetica, Arial;
    font-size: 14px;
-   text-align: center;
 }
 
 .variable-label {
