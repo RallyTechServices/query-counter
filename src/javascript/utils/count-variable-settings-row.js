@@ -31,18 +31,24 @@ Ext.define('CountVariableSettingsRow', {
 
       _getItems: function() {
               this._createAddRowButton();
-              this._createRemoveRowButton();
-              this._createIdField();
-              this._createArtifactTypeField();
-              this._createQueryField();
+              if (!this.isEmpty){
+                this._createRemoveRowButton();
+                this._createIdField();
+                this._createArtifactTypeField();
+                this._createQueryField();
+                return [
+                    this.addRowButton,
+                    this.removeRowButton,
+                    this.idField,
+                    this.artifactTypeField,
+                    this.queryField
+                ];
+              }
 
               return [
-                  this.addRowButton,
-                  this.removeRowButton,
-                  this.idField,
-                  this.artifactTypeField,
-                  this.queryField
+                  this.addRowButton
               ];
+
       },
       getVariableName: function(){ return this.idField.getValue();},
       getArtifactType: function(){ return this.artifactTypeField.getValue();},
@@ -179,11 +185,16 @@ Ext.define('CountVariableSettingsRow', {
     },
 
     _createAddRowButton: function() {
+        var addRowCls = 'variable-button-disabled';
+        if (this.addButtonEnabled){
+           addRowCls = '';
+        }
+
         this.addRowButton =  Ext.widget({
             xtype: 'rallybutton',
             itemId: 'addRowButton',
             //userAction: 'Add filter row clicked',
-            cls: 'rly-small icon-plus filter-row-control variable-button variable-button-disabled',
+            cls: 'rly-small icon-plus filter-row-control variable-button ' + addRowCls,
             margin: 5,
             border: 0,
             disabled: !this.addButtonEnabled,

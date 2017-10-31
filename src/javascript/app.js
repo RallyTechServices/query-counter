@@ -29,12 +29,12 @@ Ext.define("TSQueryCounter", {
     _validateSettings: function(){
        var cv = this._getCountVariables();
        var html = this.getSetting('html');
-
+       this.logger.log('setting ', this.getSettings());
        var errors = [];
        Ext.Array.each(cv, function(c){
           var variableName = Ext.String.format("{{0}}",c.id);
           var re = new RegExp(variableName);
-        
+
           if (!re.exec(html)){
               errors.push('Variable Name ' + variableName + ' not used.' );
           }
@@ -89,7 +89,10 @@ Ext.define("TSQueryCounter", {
         return _.uniq(modelNames);
     },
     _reloadModel: function(){
-
+       if (Ext.isEmpty(this._getModelNames())){
+          this._runApp(this.getContext().getTimeboxScope());
+          return;
+       }
         //Load the model so that we can test if it is valid for the timebox scope
         Rally.data.ModelFactory.getModels({
             types: this._getModelNames(),
@@ -103,11 +106,11 @@ Ext.define("TSQueryCounter", {
     },
     _runApp: function(timeboxScope){
       var me = this;
-      this.setLoading("Counting...");
-
-
       var countVariables = this._getCountVariables(),
           promises = [];
+
+      this.logger.log('_runApp', countVariables);
+
       Ext.Array.each(countVariables, function(cv){
           var artifactType = cv.artifactType,
             query = cv.query,
@@ -132,6 +135,8 @@ Ext.define("TSQueryCounter", {
       }, this);
 
       if (promises.length > 0){
+         this.setLoading("Counting...");
+
          Deft.Promise.all(promises).then({
             success: this._updateDisplay,
             failure: this._showErrorNotification,
@@ -139,6 +144,9 @@ Ext.define("TSQueryCounter", {
          }).always(function(){
            this.setLoading(false);
          },this);
+      } else {
+
+         this._updateDisplay();
       }
     },
     _showErrorNotification: function(msg){
@@ -174,6 +182,9 @@ Ext.define("TSQueryCounter", {
     },
 
     _updateDisplay: function(values){
+
+        if (!values){ values = []; };
+
         values = _.reduce(values, function(obj, v){
            obj = _.extend(obj, v);
            return obj;
