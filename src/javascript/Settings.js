@@ -2,59 +2,32 @@ Ext.define('Rally.technicalservices.querycounter.Settings', {
     singleton: true,
 
     getFields: function(config) {
-        
+
         var items = [];
-        
+
         items.push({
-            name: 'counterArtifactType',
-            xtype: 'tsrecordtypecombobox',
-            margin: '10px 0 0 0',
-            fieldLabel: 'Record Type',
-            valueField: 'TypePath',
-            readyEvent: 'ready' 
+          name:'countVariables',
+          fieldLabel: null,
+          labelAlign: 'top',
+          xtype:'countvariablesettings',
+          height: 350,
+          width: config.width * .90 || 600,
+          margin: 10
         });
-        
-        items.push({
-            xtype: 'textarea',
-            fieldLabel: 'Query',
-            name: 'counterQuery',
-            anchor: '100%',
-            cls: 'query-field',
-            margin: '0 70 0 0',
-            plugins: [
-                {
-                    ptype: 'rallyhelpfield',
-                    helpId: 194
-                },
-                'rallyfieldvalidationui'
-            ],
-            validateOnBlur: false,
-            validateOnChange: false,
-            validator: function(value) {
-                try {
-                    if (value) {
-                        Rally.data.wsapi.Filter.fromQueryString(value);
-                    }
-                    return true;
-                } catch (e) {
-                    return e.message;
-                }
-            }
-        });
-        
+
         items.push({
             xtype:'container',
-            html:'Display Text<br/><span style="color:#999999;"><i>Use {#} to place the results of the count.</i></span>'
+            margin: '10 70 0 60',
+            html:'<div class="variable-label">Display Text</div><span style="color:#999999;">Enter the text to display in the App.  Use the format of <b>{&lt;Variable Name&gt;}</b> to place the results of the count queries defined above.</span>'
         });
-        
-        items.push({
-            name:'counterDisplayText',
-            xtype:'rallyrichtexteditor',
-            margin: '10 70 0 80',
-            fieldLabel: 'Informational Text'
-        });
-        
 
+        items.push({
+            name:'html',
+            xtype:'rallyrichtexteditor',
+            margin: '10 70 0 60',
+            fieldLabel: 'Informational Text',
+            height: 200
+        });
         return items;
     }
 });
