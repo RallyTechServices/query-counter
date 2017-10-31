@@ -161,8 +161,8 @@ Ext.define('CountVariableSettingsRow', {
             // },
             'rallyfieldvalidationui'
           ],
-          emptyText: '( ObjectID > 0 )',
-          value: this.query,
+          emptyText: 'Type a Rally Query like ( ObjectID > 0 )...',
+          value: this.query || "(ObjectID > 0)",
           validateOnBlur: false,
           validateOnChange: false,
           validator: function(value) {
