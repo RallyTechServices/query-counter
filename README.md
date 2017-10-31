@@ -1,19 +1,30 @@
-# TS Query Counter
+# TS Multiple Query Counter
 
-This is a simple app that lets you set up a query with some explanatory
+This is a simple app that lets you set up one or more query with some explanatory
 text so that it can display a simple count of the items that match the
-query.
+query(s).
 
-![example](doc/query_counter_display.png "Example Display")
+![example](images/query-counter.png "Example Display")
 
-To display the count, use the App Settings... to insert text (and formatting)
-in the rich text editing field.  The app will replace where the user puts
-"{#}" with the count.
+To display the count for one or more queries, use the App Settings...
 
-![example](doc/query_counter_config.png "Example Configuration")
+For each query that you would like to display a count for, define the following:
+1.  Count Variable Name (this must be unique)
+2.  Artifact Type (the type of artifact to be counted)
+3.  Query
+
+In the rich text field, enter the text that you would like to display in the app.  
+To show the counts for the different queries, use the notation "{myVar}" where
+"myVar" represents the "Count Variable Name" from above.  
+The app will replace any defined variables with the count.
+
+If there is an error with the query, then the app will display the error in red in
+place of the variable.
+
+![example](images/query-counter-settings.png "Example Configuration")
 
 If this app is on a Timebox Scoped page, then the appropriate timebox filter
-will be applied if the Timebox is valid for the selected model.  If the Timebox
+will be applied if the Timebox is valid for the queried model.  If the Timebox
 is not valid for the selected model, then the Timebox scope will be ignored.  
 
 ## Development Notes

@@ -15,3 +15,42 @@
     margin-right: 5px;
     cursor: pointer;
 }
+.error-counter {
+  color: red;
+}
+
+.default-counter {
+   font-family: ProximaNova, Helvetica, Arial;
+   font-size: 14px;
+   text-align: center;
+}
+
+.variable-label {
+  font-family: ProximaNovaSemiBold, Helvetica, Arial;
+  text-transform: uppercase;
+}
+
+.variable-button{
+   border-bottom-left-radius: 2px;
+   border-bottom-right-radius: 2px;
+   border-top-left-radius: 2px;
+   border-top-right-radius: 2px;
+   border-bottom-style: none;
+   border-left-style: none;
+   border-right-style: none;
+   border-top-style: none;
+   font-size:16px;
+   padding-top: 3px;
+   width: 16px;
+   height: 33px;
+   line-height: 16px;
+   left: 21px;
+   background-clip: border-box;
+   background-color: #e6e6e6;
+   border-color: #e6e6e6;
+   color: #00a9e0;
+}
+
+.variable-button-disabled{
+   color: #d6d6d6;
+}

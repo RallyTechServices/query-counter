@@ -10,7 +10,7 @@
  *     });
  */
 Ext.define('Rally.technicalservices.RecordTypeComboBox', {
-    
+
     extend: 'Rally.ui.combobox.ComboBox',
     alias: 'widget.tsrecordtypecombobox',
 
@@ -18,8 +18,8 @@ Ext.define('Rally.technicalservices.RecordTypeComboBox', {
         var defaultConfig = {
             defaultSelectionPosition: 'last',
             editable: false,
-            fieldLabel: 'Type:',
-            labelWidth: 30,
+            fieldLabel: '',
+            //labelWidth: 30,
             context: Rally.environment.getContext(),
             storeConfig: {
                 autoLoad: false,
