@@ -15,7 +15,7 @@ Ext.define("TSQueryCounter", {
               id: 'defectCount'
             },{
               artifactType: 'HierarchicalRequirement',
-              query: '( ObjectIDs > 0 )',
+              query: '( ObjectID > 0 )',
               id: 'storyCount'
             }],
             html: 'Defects: {defectCount} and Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
