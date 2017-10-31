@@ -27,6 +27,9 @@ If this app is on a Timebox Scoped page, then the appropriate timebox filter
 will be applied if the Timebox is valid for the queried model.  If the Timebox
 is not valid for the selected model, then the Timebox scope will be ignored.  
 
+To not use queries, remove all queries using the - symbol.  To add a query back,
+use the + symbol.  
+
 ## Development Notes
 
 * Using the Rally rich text editor to get easy formatting, but it doesn't give

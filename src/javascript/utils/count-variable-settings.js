@@ -41,9 +41,9 @@ Ext.define('CountVariableSettingsComponent',{
         },this);
 
         if (Ext.isEmpty(items)) {
-            var item = this._getRowConfig();
-            items.push(item);
-            this.countVariableRows.push(item);
+            this._emptyRow = Ext.widget(this._getEmptyRowConfig());
+            items.push(this._emptyRow);
+            //this.countVariableRows.push(item);
         }
 
         items.unshift({
@@ -69,6 +69,7 @@ Ext.define('CountVariableSettingsComponent',{
             margin: 5
           }]
         });
+
 
         this._countVariableContainer = Ext.widget({
           xtype: 'container',
@@ -106,31 +107,58 @@ Ext.define('CountVariableSettingsComponent',{
             }
         };
     },
+    _getEmptyRowConfig: function(){
 
+        return {
+            xtype: 'countvariablesettingsrow',
+            isEmpty: true,
+            addButtonEnabled: true,
+            itemId: 'emptyRow',
+            listeners: {
+                addrow: function() {
+                    this._addRow(true);
+                },
+                scope: this
+            }
+        };
+    },
+    _addEmptyRow: function(){
+      this._emptyRow = Ext.widget(this._getEmptyRowConfig());
+      this._countVariableContainer.add(this._emptyRow);
+    },
+    _removeEmptyRow: function(){
+      if (this._emptyRow){
+        this._countVariableContainer.remove(this._emptyRow);
+        this._emptyRow.destroy();
+      }
+
+    },
     _addRow: function(focusOnAdd) {
-        if (!Ext.isEmpty(this.countVariableRows)) {
-            _.last(this.countVariableRows).disableAddRow();
+         console.log('countrow', this.countVariableRows);
+        if (Ext.isEmpty(this.countVariableRows)) {
+          this._removeEmptyRow();
+            //_.last(this.countVariableRows).disableAddRow();
         }
 
         var row = Ext.widget(this._getRowConfig());
         this.countVariableRows.push(row);
         this._countVariableContainer.add(row);
     },
-
     _removeRow: function(row, opts) {
         var previousRowIndex = Math.max(0, _.findIndex(this.countVariableRows, row) - 1);
         _.remove(this.countVariableRows, row);
         this._countVariableContainer.remove(row);
 
         if (Ext.isEmpty(this.countVariableRows)) {
-            this._addRow(opts.autoFocus === false ? false : true);
+            //this._addRow(opts.autoFocus === false ? false : true);
+            this._addEmptyRow();
         } else if (opts.autoFocus && this.countVariableRows[previousRowIndex].valueField) {
             this.countVariableRows[previousRowIndex].queryField.focus();
         }
 
         var lastRow = _.last(this.countVariableRows);
 
-        if (lastRow.isValid()) {
+        if (!Ext.isEmpty(lastRow) && lastRow.isValid()) {
             lastRow.enableAddRow();
         }
 
@@ -138,6 +166,10 @@ Ext.define('CountVariableSettingsComponent',{
     },
 
     _toggleRowButtons: function(row) {
+        console.log('row',row);
+        if (Ext.isEmpty(row)){
+          return;
+        }
 
         if (row.isValid() && row === _.last(this.countVariableRows)) {
             row.enableAddRow();
@@ -146,7 +178,7 @@ Ext.define('CountVariableSettingsComponent',{
         }
 
         if (this.countVariableRows.length === 1){
-          row.disableRemoveRow();
+      //    row.disableRemoveRow();
         } else {
           row.enableRemoveRow();
         }
@@ -181,7 +213,7 @@ Ext.define('CountVariableSettingsComponent',{
            if (error){
              errors.push(error);
            }
-           console.log('cvr', cvr);
+
            if (Ext.Array.contains(countVariableNames, cvr.getVariableName())){
              errors.push("Duplicate Variable Names {" + cvr.getVariableName() + "}.  Variable Names must be unique.");
            } else {
