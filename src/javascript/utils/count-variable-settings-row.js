@@ -4,7 +4,6 @@ Ext.define('CountVariableSettingsRow', {
 
         layout: 'hbox',
         cls: 'advanced-filter-row',
-
         config: {
             variableName: undefined,
             artifactType: undefined,
@@ -30,24 +29,37 @@ Ext.define('CountVariableSettingsRow', {
       },
 
       _getItems: function() {
-              this._createAddRowButton();
-              if (!this.isEmpty){
-                this._createRemoveRowButton();
-                this._createIdField();
-                this._createArtifactTypeField();
-                this._createQueryField();
-                return [
-                    this.addRowButton,
-                    this.removeRowButton,
-                    this.idField,
-                    this.artifactTypeField,
-                    this.queryField
-                ];
-              }
 
-              return [
-                  this.addRowButton
-              ];
+        this._createAddRowButton();
+
+        if (!this.isEmpty){
+          this._createRemoveRowButton();
+          this._createIdField();
+          this._createArtifactTypeField();
+          this._createQueryField();
+
+          var ct = Ext.widget({
+            xtype: 'container',
+            layout: 'vbox',
+            height: 112,
+            flex: 1,
+            items: [
+              this.idField,
+              this.artifactTypeField,
+              this.queryField
+            ]
+          });
+
+          return [
+            this.addRowButton,
+            this.removeRowButton,
+            ct
+          ];
+        }
+
+        return [
+            this.addRowButton
+        ];
 
       },
       getVariableName: function(){ return this.idField.getValue();},
@@ -102,14 +114,14 @@ Ext.define('CountVariableSettingsRow', {
           this.idField = Ext.widget({
               xtype: 'rallytextfield',
               itemId: 'idField',
-              width: 175,
-              labelAlign: 'top',
-              labelCls: 'variable-label',
-              fieldLabel: null,
+              width: '100%',
+              labelAlign:'right',
+            //  labelCls: 'variable-label',
+              fieldLabel: 'Variable Name',
               labelSeparator: '',
               emptyText: 'Unique Variable Name...',
               value: this.variableName,
-              margin: 5,
+              margin: '2 0 2 0',
               validateOnBlur: true,
               validator: function(val){
                  return val && val.length > 0;
@@ -133,12 +145,13 @@ Ext.define('CountVariableSettingsRow', {
         this.artifactTypeField = Ext.widget({
             xtype: 'tsrecordtypecombobox',
             itemId: 'artifactTypeField',
-            width: 175,
-            labelAlign: 'top',
-            fieldLabel: null,
+            width: '100%',
+
+            labelAlign: 'right',
+            fieldLabel: 'Artifact Type',
             labelSeparator: '',
-            labelCls: 'variable-label',
-            margin: 5,
+          //  labelCls: 'variable-label',
+            margin: '2 0 2 0',
             emptyText: 'Choose Artifact Type...',
             value: this.artifactType,
             valueField: 'TypePath',
@@ -161,9 +174,13 @@ Ext.define('CountVariableSettingsRow', {
         this.queryField = Ext.widget({
           xtype: 'textarea',
           fieldLabel: null,
-          labelAlign: 'top',
-          labelCls: 'variable-label',
-          margin: 5,
+          width: '100%',
+
+          labelAlign: 'right',
+          labelSeparator: '',
+          //labelCls: 'variable-label',
+          fieldLabel: 'Query',
+          margin: '2 0 2 0',
           flex: 1,
           name: 'counterQuery',
           //anchor: '100%',

@@ -26,7 +26,9 @@ Ext.define('Rally.technicalservices.querycounter.Settings', {
             xtype:'rallyrichtexteditor',
             margin: '10 70 0 60',
             fieldLabel: 'Informational Text',
-            height: 200
+            height: 200,
+            _createResizer: function(){},
+            resizeable: false
         });
         return items;
     }
