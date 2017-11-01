@@ -11,7 +11,7 @@ Ext.define('CountVariableSettingsComponent',{
       height: 350,
       minHeight: 50,
       border: false,
-      //overflowY: 'scroll',
+      overflowY: 'auto',
       config: {
         value: undefined,
       },
@@ -46,37 +46,38 @@ Ext.define('CountVariableSettingsComponent',{
             //this.countVariableRows.push(item);
         }
 
-        items.unshift({
-          xtype: 'container',
-          layout: 'hbox',
-          cls: 'advanced-filter-row',
-          items: [{
-            xtype: 'label',
-            cls: 'variable-label',
-            text: 'Count Variable Name',
-            width: 175,
-            margin: '5 5 5 60'
-          },{
-            xtype: 'label',
-            cls: 'variable-label',
-            text: 'Artifact Type',
-            width: 175,
-            margin: 5
-          },{
-            xtype: 'label',
-            cls: 'variable-label',
-            text: 'Query',
-            margin: 5
-          }]
-        });
+        // items.unshift({
+        //   xtype: 'container',
+        //   layout: 'hbox',
+        //   cls: 'advanced-filter-row',
+        //   items: [{
+        //     xtype: 'label',
+        //     cls: 'variable-label',
+        //     text: 'Count Variable Name',
+        //     width: 175,
+        //     margin: '5 5 5 60'
+        //   },{
+        //     xtype: 'label',
+        //     cls: 'variable-label',
+        //     text: 'Artifact Type',
+        //     width: 175,
+        //     margin: 5
+        //   },{
+        //     xtype: 'label',
+        //     cls: 'variable-label',
+        //     text: 'Query',
+        //     margin: 5
+        //   }]
+        // });
 
 
         this._countVariableContainer = Ext.widget({
           xtype: 'container',
           renderTo: this.inputEl,
-          overflowY: 'auto',
           maxHeight: 300,
           minHeight: 300,
+          autoScroll: true,
+          //overflowY: 'auto',
           itemId: 'countVariableContainer',
           layout: {
             type: 'vbox',
