@@ -1,6 +1,6 @@
 Ext.define('CountVariableSettingsComponent',{
   extend: 'Ext.form.field.Base',
-      alias: 'widget.countvariablesettings',
+       alias: 'widget.countvariablesettings',
 
       fieldSubTpl: '<div id="{id}" class="settings-grid"></div>',
 
@@ -8,10 +8,11 @@ Ext.define('CountVariableSettingsComponent',{
       cls: 'advanced-filter-panel',
       header: false,
       maxHeight: 350,
-      height: 350,
+    //  height: 350,
       minHeight: 50,
       border: false,
       overflowY: 'auto',
+
       config: {
         value: undefined,
       },
@@ -40,44 +41,20 @@ Ext.define('CountVariableSettingsComponent',{
             this.countVariableRows.push(item);
         },this);
 
+        var thisHeight = this.maxHeight;
         if (Ext.isEmpty(items)) {
             this._emptyRow = Ext.widget(this._getEmptyRowConfig());
             items.push(this._emptyRow);
-            //this.countVariableRows.push(item);
+            thisHeight = this.minHeight;
         }
-
-        // items.unshift({
-        //   xtype: 'container',
-        //   layout: 'hbox',
-        //   cls: 'advanced-filter-row',
-        //   items: [{
-        //     xtype: 'label',
-        //     cls: 'variable-label',
-        //     text: 'Count Variable Name',
-        //     width: 175,
-        //     margin: '5 5 5 60'
-        //   },{
-        //     xtype: 'label',
-        //     cls: 'variable-label',
-        //     text: 'Artifact Type',
-        //     width: 175,
-        //     margin: 5
-        //   },{
-        //     xtype: 'label',
-        //     cls: 'variable-label',
-        //     text: 'Query',
-        //     margin: 5
-        //   }]
-        // });
-
 
         this._countVariableContainer = Ext.widget({
           xtype: 'container',
           renderTo: this.inputEl,
           maxHeight: 300,
-          minHeight: 300,
+          // minHeight: 50,
+          height: thisHeight,
           autoScroll: true,
-          //overflowY: 'auto',
           itemId: 'countVariableContainer',
           layout: {
             type: 'vbox',
@@ -86,6 +63,10 @@ Ext.define('CountVariableSettingsComponent',{
           cls: 'filters-container',
           items: items
         });
+
+        if (Ext.isEmpty(items)){
+          this._countVariableContainer.setHeight(this.minHeight);
+        }
 
       },
 
@@ -126,11 +107,13 @@ Ext.define('CountVariableSettingsComponent',{
     _addEmptyRow: function(){
       this._emptyRow = Ext.widget(this._getEmptyRowConfig());
       this._countVariableContainer.add(this._emptyRow);
+      this._countVariableContainer.setHeight(this.minHeight);
     },
     _removeEmptyRow: function(){
       if (this._emptyRow){
         this._countVariableContainer.remove(this._emptyRow);
         this._emptyRow.destroy();
+        this._countVariableContainer.setHeight(this.maxHeight);
       }
 
     },
