@@ -72,7 +72,7 @@ Ext.define('CountVariableSettingsRow', {
       },
 
       isValid: function() {
-          return !!this.idField.getValue() && !!this.artifactTypeField.getValue() && !!this.queryField.getValue();
+          return !!this.idField.getValue() && !!this.artifactTypeField.getValue() && this.queryField.validate();
       },
       validate: function(){
          if (!this.idField.getValue()){ return "Please provide a value for the Variable Name.";}
@@ -110,11 +110,21 @@ Ext.define('CountVariableSettingsRow', {
               emptyText: 'Unique Variable Name...',
               value: this.variableName,
               margin: 5,
+              validateOnBlur: true,
+              validator: function(val){
+                 return val && val.length > 0;
+              },
+              getErrors: function(val){
+                 if (!val || val.trim().length == 0){
+                   return ["Please provide a value for Variable Name"]
+                 }
+                 return [];
+              },
               listeners: {
-                 change: function(txt,newValue,oldValue){
-                    this.fireEvent('rowvalidate', this);
-                 },
-                 scope: this
+                validitychange: function(cb,isValid){
+                  this.fireEvent('rowvalidate',this);
+                },
+               scope: this
               }
           });
       },
@@ -133,10 +143,15 @@ Ext.define('CountVariableSettingsRow', {
             value: this.artifactType,
             valueField: 'TypePath',
             displayField: 'Name',
+            validateOnBlur: true,
+            validateOnChange: true,
+            validator: function(val){
+               return val && val.length > 0;
+            },
             listeners: {
-               select: function(txt,newValue,oldValue){
-                  this.fireEvent('rowvalidate', this);
-               },
+                validitychange: function(cb,isValid){
+                  this.fireEvent('rowvalidate',this);
+                },
                scope: this
             }
         });
@@ -163,9 +178,10 @@ Ext.define('CountVariableSettingsRow', {
           ],
           emptyText: 'Type a Rally Query like ( ObjectID > 0 )...',
           value: this.query || "(ObjectID > 0)",
-          validateOnBlur: false,
+          validateOnBlur: true,
           validateOnChange: false,
           validator: function(value) {
+            if (!value){ return "Query is required."; }
             try {
               if (value) {
                 Rally.data.wsapi.Filter.fromQueryString(value);
@@ -176,9 +192,9 @@ Ext.define('CountVariableSettingsRow', {
             }
           },
           listeners: {
-             change: function(txt,newValue,oldValue){
-                this.fireEvent('rowvalidate', this);
-             },
+              validitychange: function(){
+                this.fireEvent('rowvalidate',this);
+              },
              scope: this
           }
         });

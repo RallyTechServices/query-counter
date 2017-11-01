@@ -134,7 +134,7 @@ Ext.define('CountVariableSettingsComponent',{
 
     },
     _addRow: function(focusOnAdd) {
-         console.log('countrow', this.countVariableRows);
+
         if (Ext.isEmpty(this.countVariableRows)) {
           this._removeEmptyRow();
             //_.last(this.countVariableRows).disableAddRow();
@@ -166,7 +166,6 @@ Ext.define('CountVariableSettingsComponent',{
     },
 
     _toggleRowButtons: function(row) {
-        console.log('row',row);
         if (Ext.isEmpty(row)){
           return;
         }
