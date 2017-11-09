@@ -6,17 +6,43 @@ Ext.define("TSQueryCounter", {
     items: [
         {xtype:'container',itemId:'display_box',tpl:'<tpl>{displayText}</tpl>'}
     ],
-    
+
     config: {
         defaultSettings: {
-            counterArtifactType: 'Defect',
-            counterQuery: '( ObjectID > 0 )',
-            counterDisplayText: '{#}<br/><em>Use the gear to make App Settings...</em>'
+            countVariables: [{
+              artifactType: 'Defect',
+              query: '( ObjectID > 0 )',
+              id: 'defectCount'
+            },{
+              artifactType: 'HierarchicalRequirement',
+              query: '( ObjectID > 0 )',
+              id: 'storyCount'
+            }],
+            html: 'Defects: {defectCount} and Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
-    
+
     launch: function() {
+        this._validateSettings();
         this._reloadModel();
+    },
+    _validateSettings: function(){
+       var cv = this._getCountVariables();
+       var html = this.getSetting('html');
+       this.logger.log('setting ', this.getSettings());
+       var errors = [];
+       Ext.Array.each(cv, function(c){
+          var variableName = Ext.String.format("{{0}}",c.id);
+          var re = new RegExp(variableName);
+
+          if (!re.exec(html)){
+              errors.push('Variable Name ' + variableName + ' not used.' );
+          }
+
+       });
+       if (errors.length > 0){
+          Rally.ui.notify.Notifier.showError({message: errors.join('<br/>'), allowHTML: true});
+       }
     },
     onTimeboxScopeChange: function(timebox){
         this.logger.log('onTimeboxScopeChange', timebox.getQueryFilter().toString());
@@ -24,12 +50,19 @@ Ext.define("TSQueryCounter", {
     },
     _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType){
         if (timeboxScope){
-            this.logger.log('_timeboxScopeIsValidForArtifactType',timeboxScope.getType(), this.model, this.model.getField("Iteration"), this.model.getField("Release"), timeboxScope.getQueryFilter().toString());
+            var model = this.models[artifactType];
+            this.logger.log('_timeboxScopeIsValidForArtifactType',timeboxScope.getType(), model, model.getField('Milestones'), model.getField("Iteration"), model.getField("Release"), timeboxScope.getQueryFilter().toString());
             var field = "Release";
-            if (timeboxScope.getType() == 'iteration'){
-                field = "Iteration";
+            switch(timeboxScope.getType()){
+               case 'iteration':
+                  field = "Iteration";
+                  break;
+              case 'milestone':
+                field = "Milestones";
+                break;
             }
-            if (this.model.getField(field)){
+
+            if (model.getField(field)){
                 this.logger.log('TimeboxScope', timeboxScope.getType(), 'is valid for', artifactType);
                 return true;
             }
@@ -40,58 +73,91 @@ Ext.define("TSQueryCounter", {
         this.logger.log('No Timebox Scope');
         return true;
     },
+    _getCountVariables: function(){
+        var cv = this.getSetting('countVariables');
+        if (Ext.isString(cv)){
+            cv = JSON.parse(cv);
+        }
+        return cv;
+    },
+    _getModelNames: function(){
+        var countVariables = this._getCountVariables();
+        this.logger.log('countVariables ', countVariables);
+        var modelNames = Ext.Array.map(countVariables, function(v){
+           return v.artifactType;
+        });
+        return _.uniq(modelNames);
+    },
     _reloadModel: function(){
+       if (Ext.isEmpty(this._getModelNames())){
+          this._runApp(this.getContext().getTimeboxScope());
+          return;
+       }
         //Load the model so that we can test if it is valid for the timebox scope
-        Rally.data.ModelFactory.getModel({
-            type: this.getSetting('counterArtifactType'),
+        Rally.data.ModelFactory.getModels({
+            types: this._getModelNames(),
             scope: this,
-            success: function(model) {
-                this.model = model;
+            success: function(models) {
+                this.logger.log('models ', models);
+                this.models = models;
                 this._runApp(this.getContext().getTimeboxScope());
             }
         });
     },
     _runApp: function(timeboxScope){
-        var me = this;
-        this.setLoading("Counting...");
+      var me = this;
+      var countVariables = this._getCountVariables(),
+          promises = [];
 
-        var artifactType = this.getSetting('counterArtifactType');
-        var query = this.getSetting('counterQuery');
+      this.logger.log('_runApp', countVariables);
 
-        var filters = null;
-        if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)){
-            filters = timeboxScope.getQueryFilter();
-            this.logger.log('Using Timebox Scope >>', filters.toString());
-        }
+      Ext.Array.each(countVariables, function(cv){
+          var artifactType = cv.artifactType,
+            query = cv.query,
+            id = cv.id;
 
-        if ( !Ext.isEmpty(query) ) {
-            if (filters){
-                filters = filters.and(Rally.data.wsapi.Filter.fromQueryString(query));
-            } else {
-                filters = Rally.data.wsapi.Filter.fromQueryString(query);
+            var filters = null;
+            if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)){
+                filters = timeboxScope.getQueryFilter();
+                this.logger.log('Using Timebox Scope >>', filters.toString());
             }
-        }
 
-        var display_box = this.down('#display_box');
-
-        this._loadRecordCount(artifactType, filters || []).then({
-            scope: this,
-            success: function(value) {
-                this._updateDisplay(value);
-            },
-            failure: function(error_message){
-                Ext.Msg.alert('Counter Problem',error_message);
+            if ( !Ext.isEmpty(query) ) {
+                if (filters){
+                    filters = filters.and(Rally.data.wsapi.Filter.fromQueryString(query));
+                } else {
+                    filters = Rally.data.wsapi.Filter.fromQueryString(query);
+                }
             }
-        }).always(function() {
-            me.setLoading(false);
-        });
+
+            promises.push(this._loadRecordCount(artifactType, filters || [], id));
+
+      }, this);
+
+      if (promises.length > 0){
+         this.setLoading("Counting...");
+
+         Deft.Promise.all(promises).then({
+            success: this._updateDisplay,
+            failure: this._showErrorNotification,
+            scope: this
+         }).always(function(){
+           this.setLoading(false);
+         },this);
+      } else {
+
+         this._updateDisplay();
+      }
     },
-    
-    _loadRecordCount: function(model, filters){
+    _showErrorNotification: function(msg){
+       this.logger.log('_showErrorNotification', msg);
+       Rally.ui.notify.Notifier.showError({message: msg});
+    },
+    _loadRecordCount: function(model, filters, id){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
         this.logger.log("Starting load: model>>",model, 'filters>>', filters.toString());
-          
+
         Ext.create('Rally.data.wsapi.Store', {
             model: model,
             filters: filters,
@@ -99,27 +165,45 @@ Ext.define("TSQueryCounter", {
             pageSize: 1
         }).load({
             callback : function(records, operation, successful) {
+                var result = {};
                 if (successful){
                     me.logger.log('result:', operation);
-                    
-                    var result = operation.resultSet.totalRecords || 0;
+                    result[id] = operation.resultSet.totalRecords || 0;
                     deferred.resolve(result);
                 } else {
                     me.logger.log("Failed: ", operation);
-                    deferred.reject("Couldn't Load: " + operation.error.errors.join('. '));
+                    result[id] = '<span class="error-counter">#ERROR: ' + operation.error.errors.join('. ') + '</span>';
+                    deferred.resolve(result);
+                    //deferred.reject("Couldn't Load: " + operation.error.errors.join('. '));
                 }
             }
         });
         return deferred.promise;
     },
-    
-    _updateDisplay: function(value){
-        this.logger.log('_updateDisplay',value);
-        var display_string = this.getSetting('counterDisplayText').replace(/\{#}/,value);
-        
-        this.down('#display_box').update(display_string);
+
+    _updateDisplay: function(values){
+
+        if (!values){ values = []; };
+
+        values = _.reduce(values, function(obj, v){
+           obj = _.extend(obj, v);
+           return obj;
+        },{});
+
+        this.logger.log('_updateDisplay',values);
+
+        var html = this.getSetting('html'),
+            tpl = new Ext.XTemplate(html);
+
+        this.removeAll();
+        var view = this.add({
+           xtype:'container',
+           tpl: tpl,
+           cls: 'default-counter'
+        });
+        view.update(values);
     },
-    
+
     getOptions: function() {
         return [
             {
@@ -129,23 +213,28 @@ Ext.define("TSQueryCounter", {
             }
         ];
     },
-    
+
     _launchInfo: function() {
         if ( this.about_dialog ) { this.about_dialog.destroy(); }
+        var idx = 0;
+        var html = Ext.Array.map(this._getCountVariables(), function(cv){
+           idx++;
+           return Ext.String.format("Count Variable {3} ({0}):<br/><em>{1}</em> artifact type with query:<br/>{2}<br/>",cv.id, cv.artifactType, cv.query,idx);
+        });
+
         this.about_dialog = Ext.create('Rally.technicalservices.InfoLink',{
-            informationHtml: "Record Type: " + this.getSetting('counterArtifactType') 
-                + "<br/>With Query: " + this.getSetting('counterQuery') + "<br/>"
+            informationHtml: html.join('<br/>')
         });
     },
-    
+
     isExternal: function(){
         return typeof(this.getAppId()) == 'undefined';
     },
-    
+
     getSettingsFields: function() {
-        return Rally.technicalservices.querycounter.Settings.getFields();
+        return Rally.technicalservices.querycounter.Settings.getFields({width: this.getWidth()});
     },
-        
+
     //onSettingsUpdate:  Override
     onSettingsUpdate: function (settings){
         this.logger.log('onSettingsUpdate',settings);
