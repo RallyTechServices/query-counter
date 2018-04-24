@@ -88,7 +88,7 @@ to Rally.  This resulting auth.json file should NOT be checked in.
     }
 
 ### Usage of the grunt file
-####Tasks
+#### Tasks
 
 ##### grunt debug
 
