@@ -6,6 +6,15 @@ Ext.define('Rally.technicalservices.querycounter.Settings', {
         var items = [];
 
         items.push({
+          name:'respectScoping',
+          fieldLabel: 'Respect Project Scoping?',
+          labelAlign: 'left',
+          xtype:'rallycheckboxfield',
+          labelWidth: 150,
+          margin: 10
+        });
+
+        items.push({
           name:'countVariables',
           fieldLabel: null,
           labelAlign: 'top',

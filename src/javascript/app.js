@@ -18,6 +18,7 @@ Ext.define("TSQueryCounter", {
               query: '( ObjectID > 0 )',
               id: 'storyCount'
             }],
+            respectScoping: [{value: true}],
             html: 'Defects: {defectCount} and Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
@@ -27,9 +28,11 @@ Ext.define("TSQueryCounter", {
         this._reloadModel();
     },
     _validateSettings: function(){
+       var rScope = this.getSetting('respectScoping');
        var cv = this._getCountVariables();
        var html = this.getSetting('html');
        this.logger.log('setting ', this.getSettings());
+       this.logger.log('flag ', rScope);
        var errors = [];
        Ext.Array.each(cv, function(c){
           var variableName = Ext.String.format("{{0}}",c.id);
@@ -117,9 +120,13 @@ Ext.define("TSQueryCounter", {
             id = cv.id;
 
             var filters = null;
+
+            var rScope = this.getSetting('respectScoping');
+            this.logger.log('flag ', rScope);
+
             if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)){
                 filters = timeboxScope.getQueryFilter();
-                this.logger.log('Using Timebox Scope >>', filters.toString());
+                this.logger.log('Using Timebox Scope >>', filters.toString(), filters);
             }
 
             if ( !Ext.isEmpty(query) ) {
@@ -130,7 +137,7 @@ Ext.define("TSQueryCounter", {
                 }
             }
 
-            promises.push(this._loadRecordCount(artifactType, filters || [], id));
+            promises.push(this._loadRecordCount(artifactType, filters || [], id, !rScope));
 
       }, this);
 
@@ -153,17 +160,24 @@ Ext.define("TSQueryCounter", {
        this.logger.log('_showErrorNotification', msg);
        Rally.ui.notify.Notifier.showError({message: msg});
     },
-    _loadRecordCount: function(model, filters, id){
+    _loadRecordCount: function(model, filters, id, ignoreScope){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
-        this.logger.log("Starting load: model>>",model, 'filters>>', filters.toString());
-
-        Ext.create('Rally.data.wsapi.Store', {
+        this.logger.log("Starting load: model >>",model, 'filters>>', filters.toString());
+        var config = {
             model: model,
             filters: filters,
             limit: 1,
             pageSize: 1
-        }).load({
+        };
+        if (ignoreScope) {
+            config.context =
+                {
+                project: null
+                };
+        }
+
+        Ext.create('Rally.data.wsapi.Store', config).load({
             callback : function(records, operation, successful) {
                 var result = {};
                 if (successful){
