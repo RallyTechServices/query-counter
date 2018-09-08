@@ -13,9 +13,9 @@ For each query that you would like to display a count for, define the following:
 2.  Artifact Type (the type of artifact to be counted)
 3.  Query
 
-In the rich text field, enter the text that you would like to display in the app.  
+In the rich text field, enter the text that you would like to display in the app.
 To show the counts for the different queries, use the notation "{myVar}" where
-"myVar" represents the "Count Variable Name" from above.  
+"myVar" represents the "Count Variable Name" from above.
 The app will replace any defined variables with the count.
 
 If there is an error with the query, then the app will display the error in red in
@@ -24,15 +24,15 @@ place of the variable.
 ![example](images/query-counter-settings.png "Example Configuration")
 
 To not use queries, remove all queries using the - symbol.  To add a query back,
-use the + symbol.  
+use the + symbol.
 
 If this app is on a Timebox Scoped page, then the appropriate timebox filter
 will be applied if the Timebox is valid for the queried model.  If the Timebox
-is not valid for the selected model, then the Timebox scope will be ignored.  
+is not valid for the selected model, then the Timebox scope will be ignored.
 
 If the page is scoped to a Milestone Timebox, there is an additional setting
-to allow the used to respect or ignore the global project setting. This is 
-useful when Portfolio Items associated with a specific Milestone are not 
+to allow the user to respect or ignore the global project setting. This is
+useful when Portfolio Items associated with a specific Milestone are not
 constrained to a specific subset of the Project Hierarchy tree.
 
 ## Development Notes
@@ -40,7 +40,7 @@ constrained to a specific subset of the Project Hierarchy tree.
 * Using the Rally rich text editor to get easy formatting, but it doesn't give
 us a lot of options for size of the font.
 * TODO: If a user does some formatting that interferes with {#}, it may not
-populate properly because we're just doing a simple replace.  
+populate properly because we're just doing a simple replace.
 
 ### First Load
 
@@ -81,7 +81,7 @@ to Rally.  This resulting auth.json file should NOT be checked in.
   and debug html files live.  The advantage of using these templates is that
   you can configure the behavior of the html around the JS.
   * config.json: This file contains the configuration settings necessary to
-  create the debug and production html files.  
+  create the debug and production html files.
   * package.json: This file lists the dependencies for grunt
   * auth.json: This file should NOT be checked in.  This file is needed for deploying
   and testing.  You can use the makeauth task to create this or build it by hand in this'
@@ -152,6 +152,6 @@ Run this to watch files (js and css).  When a file is saved, the task will autom
 
 This task will create an auth.json file in the proper format for you.  **Be careful** this will delete any existing auth.json file.  See **grunt deploy** to see the contents and use of this file.
 
-##### grunt --help  
+##### grunt --help
 
 Get a full listing of available targets.
