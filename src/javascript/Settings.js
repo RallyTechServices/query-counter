@@ -1,4 +1,5 @@
 Ext.define('Rally.technicalservices.querycounter.Settings', {
+
     singleton: true,
 
     getFields: function(config) {
@@ -6,12 +7,16 @@ Ext.define('Rally.technicalservices.querycounter.Settings', {
         var items = [];
 
         items.push({
+          id:'respectScoping',
           name:'respectScoping',
-          fieldLabel: 'Respect Project Scoping?',
+          fieldLabel: 'Respect Project Scoping',
           labelAlign: 'left',
           xtype:'rallycheckboxfield',
           labelWidth: 150,
-          margin: 10
+          margin: 10,
+//          checked: config.checkme,
+//          value: config.checkme,
+          hidden: config.hidden
         });
 
         items.push({

@@ -8,7 +8,7 @@ Ext.define("TSQueryCounter", {
     ],
 
     config: {
-        defaultSettings: {
+      defaultSettings: {
             countVariables: [{
               artifactType: 'Defect',
               query: '( ObjectID > 0 )',
@@ -18,8 +18,8 @@ Ext.define("TSQueryCounter", {
               query: '( ObjectID > 0 )',
               id: 'storyCount'
             }],
-            respectScoping: [{value: true}],
-            html: 'Defects: {defectCount} and Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
+            respectScoping: [{checked: true}],
+            html: 'Defects: {defectCount} or Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
 
@@ -27,6 +27,7 @@ Ext.define("TSQueryCounter", {
         this._validateSettings();
         this._reloadModel();
     },
+
     _validateSettings: function(){
        var rScope = this.getSetting('respectScoping');
        var cv = this._getCountVariables();
@@ -47,10 +48,14 @@ Ext.define("TSQueryCounter", {
           Rally.ui.notify.Notifier.showError({message: errors.join('<br/>'), allowHTML: true});
        }
     },
+
     onTimeboxScopeChange: function(timebox){
-        this.logger.log('onTimeboxScopeChange', timebox.getQueryFilter().toString());
+        this.logger.log('onTimeboxScopeChange', timebox.getQueryFilter().toString(), timebox);
         this._runApp(timebox);
+//        this._runApp(this.getContext().getTimeboxScope());
+
     },
+
     _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType){
         if (timeboxScope){
             var model = this.models[artifactType];
@@ -76,6 +81,7 @@ Ext.define("TSQueryCounter", {
         this.logger.log('No Timebox Scope');
         return true;
     },
+
     _getCountVariables: function(){
         var cv = this.getSetting('countVariables');
         if (Ext.isString(cv)){
@@ -83,6 +89,7 @@ Ext.define("TSQueryCounter", {
         }
         return cv;
     },
+
     _getModelNames: function(){
         var countVariables = this._getCountVariables();
         this.logger.log('countVariables ', countVariables);
@@ -91,6 +98,7 @@ Ext.define("TSQueryCounter", {
         });
         return _.uniq(modelNames);
     },
+
     _reloadModel: function(){
        if (Ext.isEmpty(this._getModelNames())){
           this._runApp(this.getContext().getTimeboxScope());
@@ -107,12 +115,14 @@ Ext.define("TSQueryCounter", {
             }
         });
     },
+
     _runApp: function(timeboxScope){
       var me = this;
       var countVariables = this._getCountVariables(),
+          rScope = this.getSetting('respectScoping'),
           promises = [];
 
-      this.logger.log('_runApp', countVariables);
+      this.logger.log('_runApp', countVariables, 'flag ', rScope);
 
       Ext.Array.each(countVariables, function(cv){
           var artifactType = cv.artifactType,
@@ -121,10 +131,8 @@ Ext.define("TSQueryCounter", {
 
             var filters = null;
 
-            var rScope = this.getSetting('respectScoping');
-            this.logger.log('flag ', rScope);
-
             if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)){
+ //               me.onTimeboxScopeChange(timebox);
                 filters = timeboxScope.getQueryFilter();
                 this.logger.log('Using Timebox Scope >>', filters.toString(), filters);
             }
@@ -156,10 +164,12 @@ Ext.define("TSQueryCounter", {
          this._updateDisplay();
       }
     },
+
     _showErrorNotification: function(msg){
        this.logger.log('_showErrorNotification', msg);
        Rally.ui.notify.Notifier.showError({message: msg});
     },
+
     _loadRecordCount: function(model, filters, id, ignoreScope){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
@@ -209,6 +219,9 @@ Ext.define("TSQueryCounter", {
         var html = this.getSetting('html'),
             tpl = new Ext.XTemplate(html);
 
+        var rScope2 = this.getSetting('respectScoping');
+        this.logger.log('flag ', rScope2);
+
         this.removeAll();
         var view = this.add({
            xtype:'container',
@@ -246,6 +259,20 @@ Ext.define("TSQueryCounter", {
     },
 
     getSettingsFields: function() {
+        var tbscope = this.getContext().getTimeboxScope();
+
+        if (tbscope == undefined || tbscope.getType() != 'milestone') {
+//            return Rally.technicalservices.querycounter.Settings.getFields({checked: true});
+//            Ext.getCmp('respectScoping').setValue(true);
+//            return Rally.technicalservices.querycounter.Settings.getFields({checked: true});
+        }
+
+        if (tbscope == undefined || tbscope.getType() != 'milestone') {
+//            return Rally.technicalservices.querycounter.Settings.getFields({checked: true});
+//            Ext.getCmp('respectScoping').setValue(true);
+            return Rally.technicalservices.querycounter.Settings.getFields({hidden: true});
+        }
+
         return Rally.technicalservices.querycounter.Settings.getFields({width: this.getWidth()});
     },
 
@@ -254,5 +281,7 @@ Ext.define("TSQueryCounter", {
         this.logger.log('onSettingsUpdate',settings);
 //        Ext.apply(this, settings);
         this._runApp();
+//          this._runApp(this.getContext().getTimeboxScope());
+
     }
 });

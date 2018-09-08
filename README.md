@@ -23,12 +23,17 @@ place of the variable.
 
 ![example](images/query-counter-settings.png "Example Configuration")
 
+To not use queries, remove all queries using the - symbol.  To add a query back,
+use the + symbol.  
+
 If this app is on a Timebox Scoped page, then the appropriate timebox filter
 will be applied if the Timebox is valid for the queried model.  If the Timebox
 is not valid for the selected model, then the Timebox scope will be ignored.  
 
-To not use queries, remove all queries using the - symbol.  To add a query back,
-use the + symbol.  
+If the page is scoped to a Milestone Timebox, there is an additional setting
+to allow the used to respect or ignore the global project setting. This is 
+useful when Portfolio Items associated with a specific Milestone are not 
+constrained to a specific subset of the Project Hierarchy tree.
 
 ## Development Notes
 
