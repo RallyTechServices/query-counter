@@ -56,7 +56,7 @@ module.exports = function(grunt) {
     config.version = pkg.version
 
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: pkg,
         uglify: {
             options: {
                 mangle: true
