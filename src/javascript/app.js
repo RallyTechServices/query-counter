@@ -231,29 +231,6 @@ Ext.define("TSQueryCounter", {
         view.update(values);
     },
 
-    getOptions: function() {
-        return [
-            {
-                text: 'About...',
-                handler: this._launchInfo,
-                scope: this
-            }
-        ];
-    },
-
-    _launchInfo: function() {
-        if ( this.about_dialog ) { this.about_dialog.destroy(); }
-        var idx = 0;
-        var html = Ext.Array.map(this._getCountVariables(), function(cv){
-           idx++;
-           return Ext.String.format("Count Variable {3} ({0}):<br/><em>{1}</em> artifact type with query:<br/>{2}<br/>",cv.id, cv.artifactType, cv.query,idx);
-        });
-
-        this.about_dialog = Ext.create('Rally.technicalservices.InfoLink',{
-            informationHtml: html.join('<br/>')
-        });
-    },
-
     isExternal: function(){
         return typeof(this.getAppId()) == 'undefined';
     },
