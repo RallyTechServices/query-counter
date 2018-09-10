@@ -1,7 +1,5 @@
 {
-    "name": "TS Query Counter",
     "className": "TSQueryCounter",
     "server": "https://rally1.rallydev.com",
-    "sdk": "2.1",
-    "story": "N/A"
+    "sdk": "2.1"
 }
