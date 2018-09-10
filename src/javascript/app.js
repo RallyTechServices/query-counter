@@ -18,7 +18,7 @@ Ext.define("TSQueryCounter", {
               query: '( ObjectID > 0 )',
               id: 'storyCount'
             }],
-            respectScoping: [{checked: true}],
+            searchAllProjects: [{checked: false}],
             html: 'Defects: {defectCount} or Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
@@ -29,11 +29,9 @@ Ext.define("TSQueryCounter", {
     },
 
     _validateSettings: function(){
-       var rScope = this.getSetting('respectScoping');
        var cv = this._getCountVariables();
        var html = this.getSetting('html');
        this.logger.log('setting ', this.getSettings());
-       this.logger.log('flag ', rScope);
        var errors = [];
        Ext.Array.each(cv, function(c){
           var variableName = Ext.String.format("{{0}}",c.id);
@@ -52,8 +50,6 @@ Ext.define("TSQueryCounter", {
     onTimeboxScopeChange: function(timebox){
         this.logger.log('onTimeboxScopeChange', timebox.getQueryFilter().toString(), timebox);
         this._runApp(timebox);
-//        this._runApp(this.getContext().getTimeboxScope());
-
     },
 
     _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType){
@@ -119,10 +115,9 @@ Ext.define("TSQueryCounter", {
     _runApp: function(timeboxScope){
       var me = this;
       var countVariables = this._getCountVariables(),
-          rScope = this.getSetting('respectScoping'),
           promises = [];
 
-      this.logger.log('_runApp', countVariables, 'flag ', rScope);
+      this.logger.log('_runApp', countVariables);
 
       Ext.Array.each(countVariables, function(cv){
           var artifactType = cv.artifactType,
@@ -145,7 +140,7 @@ Ext.define("TSQueryCounter", {
                 }
             }
 
-            promises.push(this._loadRecordCount(artifactType, filters || [], id, !rScope));
+            promises.push(this._loadRecordCount(artifactType, filters || [], id));
 
       }, this);
 
@@ -170,7 +165,7 @@ Ext.define("TSQueryCounter", {
        Rally.ui.notify.Notifier.showError({message: msg});
     },
 
-    _loadRecordCount: function(model, filters, id, ignoreScope){
+    _loadRecordCount: function(model, filters, id){
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
         this.logger.log("Starting load: model >>",model, 'filters>>', filters.toString());
@@ -180,11 +175,10 @@ Ext.define("TSQueryCounter", {
             limit: 1,
             pageSize: 1
         };
-        if (ignoreScope) {
-            config.context =
-                {
+        if (this.searchAllProjects()) {
+            config.context = {
                 project: null
-                };
+            };
         }
 
         Ext.create('Rally.data.wsapi.Store', config).load({
@@ -198,7 +192,6 @@ Ext.define("TSQueryCounter", {
                     me.logger.log("Failed: ", operation);
                     result[id] = '<span class="error-counter">#ERROR: ' + operation.error.errors.join('. ') + '</span>';
                     deferred.resolve(result);
-                    //deferred.reject("Couldn't Load: " + operation.error.errors.join('. '));
                 }
             }
         });
@@ -219,9 +212,6 @@ Ext.define("TSQueryCounter", {
         var html = this.getSetting('html'),
             tpl = new Ext.XTemplate(html);
 
-        var rScope2 = this.getSetting('respectScoping');
-        this.logger.log('flag ', rScope2);
-
         this.removeAll();
         var view = this.add({
            xtype:'container',
@@ -234,25 +224,29 @@ Ext.define("TSQueryCounter", {
     isExternal: function(){
         return typeof(this.getAppId()) == 'undefined';
     },
-
-    getSettingsFields: function() {
+    
+    isMilestoneScoped: function() {
+        var result = false;
+        
         var tbscope = this.getContext().getTimeboxScope();
-
-        if (tbscope == undefined || tbscope.getType() != 'milestone') {
-//            return Rally.technicalservices.querycounter.Settings.getFields({checked: true});
-//            Ext.getCmp('respectScoping').setValue(true);
-//            return Rally.technicalservices.querycounter.Settings.getFields({checked: true});
+        if (tbscope && tbscope.getType() == 'milestone') {
+            result = true;
         }
-
-        if (tbscope == undefined || tbscope.getType() != 'milestone') {
-//            return Rally.technicalservices.querycounter.Settings.getFields({checked: true});
-//            Ext.getCmp('respectScoping').setValue(true);
-            return Rally.technicalservices.querycounter.Settings.getFields({hidden: true});
-        }
-
-        return Rally.technicalservices.querycounter.Settings.getFields({width: this.getWidth()});
+        return result
+    },
+    
+    searchAllProjects: function() {
+        var searchAllProjects = this.getSetting('searchAllProjects');
+        return this.isMilestoneScoped() && searchAllProjects;
     },
 
+    getSettingsFields: function() {
+        return Rally.technicalservices.querycounter.Settings.getFields({
+            width: this.getWidth(),
+            showSearchAllProjects: this.isMilestoneScoped()
+        });
+    },
+/*
     //onSettingsUpdate:  Override
     onSettingsUpdate: function (settings){
         this.logger.log('onSettingsUpdate',settings);
@@ -261,4 +255,5 @@ Ext.define("TSQueryCounter", {
 //          this._runApp(this.getContext().getTimeboxScope());
 
     }
+    */
 });
