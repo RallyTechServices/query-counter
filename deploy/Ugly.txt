@@ -3,13 +3,13 @@
 <head>
     <title>TS Query Counter-1.0.2-1</title>
     <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Mon Sep 10 2018 20:28:10 GMT+0000 (UTC) -->
+    <!--  Build Date: Mon Sep 10 2018 20:38:55 GMT+0000 (UTC) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Mon Sep 10 2018 20:28:10 GMT+0000 (UTC)";
+        var APP_BUILD_DATE = "Mon Sep 10 2018 20:38:55 GMT+0000 (UTC)";
         var STORY    = "N/A";
         var BUILDER  = "ec2-user";
-        var CHECKSUM = 17064472018;
+        var CHECKSUM = 17064475712;
     </script>
     
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
