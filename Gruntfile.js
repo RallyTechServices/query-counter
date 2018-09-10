@@ -51,6 +51,9 @@ module.exports = function(grunt) {
         grunt.log.writeln("");
         grunt.log.writeln("WARNING: Slow tests won't run without an auth.json file");
     }
+    
+    pkg = grunt.file.readJSON('package.json')
+    config.version = pkg.version
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
