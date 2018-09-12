@@ -18,7 +18,7 @@ Ext.define("TSQueryCounter", {
               query: '( ObjectID > 0 )',
               id: 'storyCount'
             }],
-            searchAllProjects: [{checked: false}],
+            searchAllProjects: false,
             html: 'Defects: {defectCount} or Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
@@ -48,8 +48,8 @@ Ext.define("TSQueryCounter", {
     },
 
     onTimeboxScopeChange: function(timebox){
-        this.logger.log('onTimeboxScopeChange', timebox.getQueryFilter().toString(), timebox);
-        this._runApp(timebox);
+        this.callParent(arguments);
+        this._runApp();
     },
 
     _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType){
@@ -97,7 +97,7 @@ Ext.define("TSQueryCounter", {
 
     _reloadModel: function(){
        if (Ext.isEmpty(this._getModelNames())){
-          this._runApp(this.getContext().getTimeboxScope());
+          this._runApp();
           return;
        }
         //Load the model so that we can test if it is valid for the timebox scope
@@ -107,13 +107,23 @@ Ext.define("TSQueryCounter", {
             success: function(models) {
                 this.logger.log('models ', models);
                 this.models = models;
-                this._runApp(this.getContext().getTimeboxScope());
+                this._runApp();
             }
         });
     },
 
-    _runApp: function(timeboxScope){
+    // There is a subtle  bug on timebox
+    // scoped pages where the milestone timebox is not correctly restored after a settings change.
+    // 1. Set page as milestone timebox scoped
+    // 2. Pick a non-null milestone timebox
+    // 3. Open app settings and save (no change needed)
+    // 4. Timebox will be 'milestone' in the window.location.href instead of 'milestone/12345'.
+    // See getSdkInfo() in the SDK for how the timebox is restored.
+    // This only seems to occur the first time after the page is made timebox scoped and goes away once
+    // the page is reloaded once.
+    _runApp: function(){
       var me = this;
+      var timeboxScope = this.getContext().getTimeboxScope()
       var countVariables = this._getCountVariables(),
           promises = [];
 
@@ -245,15 +255,6 @@ Ext.define("TSQueryCounter", {
             width: this.getWidth(),
             showSearchAllProjects: this.isMilestoneScoped()
         });
-    },
-/*
-    //onSettingsUpdate:  Override
-    onSettingsUpdate: function (settings){
-        this.logger.log('onSettingsUpdate',settings);
-//        Ext.apply(this, settings);
-        this._runApp();
-//          this._runApp(this.getContext().getTimeboxScope());
-
     }
-    */
+
 });
