@@ -4,7 +4,15 @@ Ext.define("TSQueryCounter", {
     logger: new Rally.technicalservices.Logger(),
     defaults: { margin: 10 },
     items: [
-        {xtype:'container',itemId:'display_box',tpl:'<tpl>{displayText}</tpl>'}
+        {
+            xtype: 'rallybutton',
+            style: {'float': 'right'},
+            cls: 'secondary rly-small',
+            frame: false,
+            itemId: 'export-menu-button',
+            iconCls: 'icon-export'
+        },
+        {xtype:'container',itemId:'display_box'}
     ],
 
     config: {
@@ -22,10 +30,23 @@ Ext.define("TSQueryCounter", {
             html: 'Defects: {defectCount} or Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
+    
+    currentValues: [],
 
     launch: function() {
+        var exportButton = this.down('#export-menu-button')
+        exportButton.on('click', this._onExport, this);
         this._validateSettings();
         this._reloadModel();
+    },
+    
+    _onExport: function() {
+        var csv = ["Variable Name,Value"]
+        _.each(this.currentValues, function(value, key){
+           csv.push([key, value].join(',')) 
+        });
+        csv = csv.join('\r\n');
+        CArABU.technicalservices.FileUtilities.saveCSVToFile(csv, 'query-counter.csv');
     },
 
     _validateSettings: function(){
@@ -216,14 +237,16 @@ Ext.define("TSQueryCounter", {
            obj = _.extend(obj, v);
            return obj;
         },{});
+        
+        this.currentValues = values;
 
         this.logger.log('_updateDisplay',values);
 
         var html = this.getSetting('html'),
             tpl = new Ext.XTemplate(html);
-
-        this.removeAll();
-        var view = this.add({
+        var display_box = this.down('#display_box');
+        display_box.removeAll();
+        var view = display_box.add({
            xtype:'container',
            tpl: tpl,
            cls: 'default-counter'
