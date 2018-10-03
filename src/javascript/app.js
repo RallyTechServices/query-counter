@@ -3,7 +3,10 @@ Ext.define("TSQueryCounter", {
     componentCls: 'app',
     logger: new Rally.technicalservices.Logger(),
     defaults: { margin: 10 },
-    items: [
+    items: [{
+            id: Utils.AncestorPiAppFilter.RENDER_AREA_ID,
+            xtype: 'container'
+        },
         {
             xtype: 'rallybutton',
             style: {'float': 'right'},
@@ -31,11 +34,22 @@ Ext.define("TSQueryCounter", {
         }
     },
     
+    plugins: [{
+        ptype: 'UtilsAncestorPiAppFilter',
+        pluginId: 'ancestorFilterPlugin',
+    }],
+    
     currentValues: [],
 
     launch: function() {
         var exportButton = this.down('#export-menu-button')
         exportButton.on('click', this._onExport, this);
+        
+        this.getPlugin('ancestorFilterPlugin')
+            .on(Utils.AncestorPiAppFilter.PI_SELECTED, function() {
+            this._runApp();
+        }, this);
+        
         this._validateSettings();
         this._reloadModel();
     },
@@ -170,7 +184,9 @@ Ext.define("TSQueryCounter", {
                     filters = Rally.data.wsapi.Filter.fromQueryString(query);
                 }
             }
-
+            
+            var ancestorFilterPlugin = this.getPlugin('ancestorFilterPlugin');
+            filters = filters.and(ancestorFilterPlugin.getFilterForType(artifactType));
             promises.push(this._loadRecordCount(artifactType, filters || [], id));
 
       }, this);
