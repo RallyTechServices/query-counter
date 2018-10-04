@@ -26,6 +26,8 @@ place of the variable.
 To not use queries, remove all queries using the - symbol.  To add a query back,
 use the + symbol.
 
+## Timebox scoping
+
 If this app is on a Timebox Scoped page, then the appropriate timebox filter
 will be applied if the Timebox is valid for the queried model.  If the Timebox
 is not valid for the selected model, then the Timebox scope will be ignored.
@@ -34,6 +36,16 @@ If the page is scoped to a Milestone Timebox, there is an additional setting
 to allow the user to respect or ignore the global project setting. This is
 useful when Portfolio Items associated with a specific Milestone are not
 constrained to a specific subset of the Project Hierarchy tree.
+
+## Export
+
+The current variables and values can be exported in CSV format
+
+## Portfolio Item Ancestor
+
+A setting allows a portfolio item ancestor filter to be added to the page. If a portfolio item
+of that type is selected, all query values are filtered down to those that have the selected item
+as an ancestor. Types that don't have that portfolio item type as an ancestor will return 0.
 
 ## Development Notes
 

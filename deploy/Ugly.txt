@@ -3,11 +3,11 @@
 <head>
     <title>query-counter-1.0.5</title>
     <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Thu Oct 04 2018 22:06:37 GMT+0000 (UTC) -->
+    <!--  Build Date: Thu Oct 04 2018 22:12:07 GMT+0000 (UTC) -->
 
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Thu Oct 04 2018 22:06:37 GMT+0000 (UTC)";
-        var CHECKSUM = 37926680041;
+        var APP_BUILD_DATE = "Thu Oct 04 2018 22:12:07 GMT+0000 (UTC)";
+        var CHECKSUM = 37926677873;
     </script>
 
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
