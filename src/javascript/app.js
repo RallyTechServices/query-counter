@@ -3,91 +3,121 @@ Ext.define("TSQueryCounter", {
     componentCls: 'app',
     logger: new Rally.technicalservices.Logger(),
     defaults: { margin: 10 },
-    items: [
-        {
-            xtype: 'rallybutton',
-            style: {'float': 'right'},
-            cls: 'secondary rly-small',
-            frame: false,
-            itemId: 'export-menu-button',
-            iconCls: 'icon-export'
+    items: [{
+            xtype: 'container',
+            layout: {
+                type: 'hbox',
+                align: 'middle'
+            },
+            items: [{
+                id: Utils.AncestorPiAppFilter.RENDER_AREA_ID,
+                xtype: 'container'
+            }, {
+                xtype: 'container',
+                flex: 1
+            }, {
+                xtype: 'rallybutton',
+                style: { 'float': 'right' },
+                cls: 'secondary rly-small',
+                frame: false,
+                itemId: 'export-menu-button',
+                iconCls: 'icon-export'
+            }]
         },
-        {xtype:'container',itemId:'display_box'}
+        {
+            xtype: 'container',
+            itemId: 'display_box'
+        }
     ],
 
     config: {
-      defaultSettings: {
+        defaultSettings: {
             countVariables: [{
-              artifactType: 'Defect',
-              query: '( ObjectID > 0 )',
-              id: 'defectCount'
-            },{
-              artifactType: 'HierarchicalRequirement',
-              query: '( ObjectID > 0 )',
-              id: 'storyCount'
+                artifactType: 'Defect',
+                query: '( ObjectID > 0 )',
+                id: 'defectCount'
+            }, {
+                artifactType: 'HierarchicalRequirement',
+                query: '( ObjectID > 0 )',
+                id: 'storyCount'
             }],
             searchAllProjects: false,
             html: 'Defects: {defectCount} or Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
-    
+
+    plugins: [{
+        ptype: 'UtilsAncestorPiAppFilter',
+        pluginId: 'ancestorFilterPlugin',
+    }],
+
     currentValues: [],
 
     launch: function() {
         var exportButton = this.down('#export-menu-button')
         exportButton.on('click', this._onExport, this);
+
+        // Update the counters when the filters change
+        var ancestorFilterPlugin = this.getPlugin('ancestorFilterPlugin');
+        ancestorFilterPlugin.on('select', function() {
+            this._runApp();
+        }, this);
+
         this._validateSettings();
-        this._reloadModel();
+        this._reloadModel().then({
+            scope: this,
+            success: this._runApp
+        });
     },
-    
+
     _onExport: function() {
         var csv = ["Variable Name,Value"]
-        _.each(this.currentValues, function(value, key){
-           csv.push([key, value].join(',')) 
+        _.each(this.currentValues, function(value, key) {
+            csv.push([key, value].join(','))
         });
         csv = csv.join('\r\n');
         CArABU.technicalservices.FileUtilities.saveCSVToFile(csv, 'query-counter.csv');
     },
 
-    _validateSettings: function(){
-       var cv = this._getCountVariables();
-       var html = this.getSetting('html');
-       this.logger.log('setting ', this.getSettings());
-       var errors = [];
-       Ext.Array.each(cv, function(c){
-          var variableName = Ext.String.format("{{0}}",c.id);
-          var re = new RegExp(variableName);
+    _validateSettings: function() {
+        var cv = this._getCountVariables();
+        var html = this.getSetting('html');
+        this.logger.log('setting ', this.getSettings());
+        var errors = [];
+        Ext.Array.each(cv, function(c) {
+            var variableName = Ext.String.format("{{0}}", c.id);
+            var re = new RegExp(variableName);
 
-          if (!re.exec(html)){
-              errors.push('Variable Name ' + variableName + ' not used.' );
-          }
+            if (!re.exec(html)) {
+                errors.push('Variable Name ' + variableName + ' not used.');
+            }
 
-       });
-       if (errors.length > 0){
-          Rally.ui.notify.Notifier.showError({message: errors.join('<br/>'), allowHTML: true});
-       }
+        });
+        if (errors.length > 0) {
+            Rally.ui.notify.Notifier.showError({ message: errors.join('<br/>'), allowHTML: true });
+        }
     },
 
-    onTimeboxScopeChange: function(timebox){
+    onTimeboxScopeChange: function(timebox) {
         this.callParent(arguments);
         this._runApp();
     },
 
-    _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType){
-        if (timeboxScope){
+    _timeboxScopeIsValidForArtifactType: function(timeboxScope, artifactType) {
+        if (timeboxScope) {
             var model = this.models[artifactType];
-            this.logger.log('_timeboxScopeIsValidForArtifactType',timeboxScope.getType(), model, model.getField('Milestones'), model.getField("Iteration"), model.getField("Release"), timeboxScope.getQueryFilter().toString());
+            this.logger.log('_timeboxScopeIsValidForArtifactType', timeboxScope.getType(), model, model.getField('Milestones'), model.getField("Iteration"), model.getField("Release"), timeboxScope.getQueryFilter().toString());
             var field = "Release";
-            switch(timeboxScope.getType()){
-               case 'iteration':
-                  field = "Iteration";
-                  break;
-              case 'milestone':
-                field = "Milestones";
-                break;
+            switch (timeboxScope.getType()) {
+                case 'iteration':
+                    field = "Iteration";
+                    break;
+                case 'milestone':
+                    field = "Milestones";
+                    break;
             }
 
-            if (model.getField(field)){
+            if (model.getField(field)) {
                 this.logger.log('TimeboxScope', timeboxScope.getType(), 'is valid for', artifactType);
                 return true;
             }
@@ -99,28 +129,28 @@ Ext.define("TSQueryCounter", {
         return true;
     },
 
-    _getCountVariables: function(){
+    _getCountVariables: function() {
         var cv = this.getSetting('countVariables');
-        if (Ext.isString(cv)){
+        if (Ext.isString(cv)) {
             cv = JSON.parse(cv);
         }
         return cv;
     },
 
-    _getModelNames: function(){
+    _getModelNames: function() {
         var countVariables = this._getCountVariables();
         this.logger.log('countVariables ', countVariables);
-        var modelNames = Ext.Array.map(countVariables, function(v){
-           return v.artifactType;
+        var modelNames = Ext.Array.map(countVariables, function(v) {
+            return v.artifactType;
         });
         return _.uniq(modelNames);
     },
 
-    _reloadModel: function(){
-       if (Ext.isEmpty(this._getModelNames())){
-          this._runApp();
-          return;
-       }
+    _reloadModel: function() {
+        var deferred = Ext.create('Deft.Deferred');
+        if (Ext.isEmpty(this._getModelNames())) {
+            deferred.resolve();
+        }
         //Load the model so that we can test if it is valid for the timebox scope
         Rally.data.ModelFactory.getModels({
             types: this._getModelNames(),
@@ -128,9 +158,10 @@ Ext.define("TSQueryCounter", {
             success: function(models) {
                 this.logger.log('models ', models);
                 this.models = models;
-                this._runApp();
+                deferred.resolve();
             }
         });
+        return deferred.promise;
     },
 
     // There is a subtle  bug on timebox
@@ -142,64 +173,76 @@ Ext.define("TSQueryCounter", {
     // See getSdkInfo() in the SDK for how the timebox is restored.
     // This only seems to occur the first time after the page is made timebox scoped and goes away once
     // the page is reloaded once.
-    _runApp: function(){
-      var me = this;
-      var timeboxScope = this.getContext().getTimeboxScope()
-      var countVariables = this._getCountVariables(),
-          promises = [];
+    _runApp: function() {
+        var me = this;
+        var timeboxScope = this.getContext().getTimeboxScope()
+        var countVariables = this._getCountVariables(),
+            promises = [];
 
-      this.logger.log('_runApp', countVariables);
+        this.logger.log('_runApp', countVariables);
 
-      Ext.Array.each(countVariables, function(cv){
-          var artifactType = cv.artifactType,
-            query = cv.query,
-            id = cv.id;
+        Ext.Array.each(countVariables, function(cv) {
+            var artifactType = cv.artifactType,
+                query = cv.query,
+                id = cv.id;
 
             var filters = null;
 
-            if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)){
- //               me.onTimeboxScopeChange(timebox);
+            if (timeboxScope && this._timeboxScopeIsValidForArtifactType(timeboxScope, artifactType)) {
+                //               me.onTimeboxScopeChange(timebox);
                 filters = timeboxScope.getQueryFilter();
                 this.logger.log('Using Timebox Scope >>', filters.toString(), filters);
             }
 
-            if ( !Ext.isEmpty(query) ) {
-                if (filters){
+            if (!Ext.isEmpty(query)) {
+                if (filters) {
                     filters = filters.and(Rally.data.wsapi.Filter.fromQueryString(query));
-                } else {
+                }
+                else {
                     filters = Rally.data.wsapi.Filter.fromQueryString(query);
                 }
             }
 
-            promises.push(this._loadRecordCount(artifactType, filters || [], id));
+            var promise = this.getPlugin('ancestorFilterPlugin').getFilterForType(artifactType).then({
+                scope: this,
+                success: function(ancestorFilter) {
+                    if (ancestorFilter) {
+                        filters = filters.and(ancestorFilter);
+                    }
+                    return this._loadRecordCount(artifactType, filters || [], id)
+                }
+            });
 
-      }, this);
+            promises.push(promise);
 
-      if (promises.length > 0){
-         this.setLoading("Counting...");
+        }, this);
 
-         Deft.Promise.all(promises).then({
-            success: this._updateDisplay,
-            failure: this._showErrorNotification,
-            scope: this
-         }).always(function(){
-           this.setLoading(false);
-         },this);
-      } else {
+        if (promises.length > 0) {
+            this.setLoading("Counting...");
 
-         this._updateDisplay();
-      }
+            Deft.Promise.all(promises).then({
+                success: this._updateDisplay,
+                failure: this._showErrorNotification,
+                scope: this
+            }).always(function() {
+                this.setLoading(false);
+            }, this);
+        }
+        else {
+
+            this._updateDisplay();
+        }
     },
 
-    _showErrorNotification: function(msg){
-       this.logger.log('_showErrorNotification', msg);
-       Rally.ui.notify.Notifier.showError({message: msg});
+    _showErrorNotification: function(msg) {
+        this.logger.log('_showErrorNotification', msg);
+        Rally.ui.notify.Notifier.showError({ message: msg });
     },
 
-    _loadRecordCount: function(model, filters, id){
+    _loadRecordCount: function(model, filters, id) {
         var deferred = Ext.create('Deft.Deferred');
         var me = this;
-        this.logger.log("Starting load: model >>",model, 'filters>>', filters.toString());
+        this.logger.log("Starting load: model >>", model, 'filters>>', filters.toString());
         var config = {
             model: model,
             filters: filters,
@@ -213,13 +256,14 @@ Ext.define("TSQueryCounter", {
         }
 
         Ext.create('Rally.data.wsapi.Store', config).load({
-            callback : function(records, operation, successful) {
+            callback: function(records, operation, successful) {
                 var result = {};
-                if (successful){
+                if (successful) {
                     me.logger.log('result:', operation);
                     result[id] = operation.resultSet.totalRecords || 0;
                     deferred.resolve(result);
-                } else {
+                }
+                else {
                     me.logger.log("Failed: ", operation);
                     result[id] = '<span class="error-counter">#ERROR: ' + operation.error.errors.join('. ') + '</span>';
                     deferred.resolve(result);
@@ -229,45 +273,45 @@ Ext.define("TSQueryCounter", {
         return deferred.promise;
     },
 
-    _updateDisplay: function(values){
+    _updateDisplay: function(values) {
 
-        if (!values){ values = []; };
+        if (!values) { values = []; };
 
-        values = _.reduce(values, function(obj, v){
-           obj = _.extend(obj, v);
-           return obj;
-        },{});
-        
+        values = _.reduce(values, function(obj, v) {
+            obj = _.extend(obj, v);
+            return obj;
+        }, {});
+
         this.currentValues = values;
 
-        this.logger.log('_updateDisplay',values);
+        this.logger.log('_updateDisplay', values);
 
         var html = this.getSetting('html'),
             tpl = new Ext.XTemplate(html);
         var display_box = this.down('#display_box');
         display_box.removeAll();
         var view = display_box.add({
-           xtype:'container',
-           tpl: tpl,
-           cls: 'default-counter'
+            xtype: 'container',
+            tpl: tpl,
+            cls: 'default-counter'
         });
         view.update(values);
     },
 
-    isExternal: function(){
+    isExternal: function() {
         return typeof(this.getAppId()) == 'undefined';
     },
-    
+
     isMilestoneScoped: function() {
         var result = false;
-        
+
         var tbscope = this.getContext().getTimeboxScope();
         if (tbscope && tbscope.getType() == 'milestone') {
             result = true;
         }
         return result
     },
-    
+
     searchAllProjects: function() {
         var searchAllProjects = this.getSetting('searchAllProjects');
         return this.isMilestoneScoped() && searchAllProjects;
