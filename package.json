@@ -9,10 +9,10 @@
     "deploy-debugsdk:watch": "nodemon --exec grunt deploy-debugsdk"
   },
   "dependencies": {
+    "@agile-central-technical-services/utils-ancestor-pi-app-filter": "^2.0.1",
     "@agile-central-technical-services/utils-file-utils": "^1.0.0"
   },
   "devDependencies": {
-    "@agile-central-technical-services/utils-ancestor-pi-app-filter": "^1.0.1",
     "grunt": "~0.4.5",
     "grunt-cli": "0.1.6",
     "grunt-contrib-jasmine": "1.1.0",

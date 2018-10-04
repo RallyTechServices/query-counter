@@ -57,21 +57,16 @@ Ext.define("TSQueryCounter", {
         var exportButton = this.down('#export-menu-button')
         exportButton.on('click', this._onExport, this);
 
+        // Update the counters when the filters change
         var ancestorFilterPlugin = this.getPlugin('ancestorFilterPlugin');
         ancestorFilterPlugin.on('select', function() {
             this._runApp();
         }, this);
-        ancestorFilterPlugin.getReadyPromise().then({
+
+        this._validateSettings();
+        this._reloadModel().then({
             scope: this,
-            success: function() {
-                this._validateSettings();
-                this._reloadModel().then({
-                    scope: this,
-                    success: function() {
-                        this._runApp();
-                    }
-                });
-            }
+            success: this._runApp
         });
     },
 
@@ -208,11 +203,17 @@ Ext.define("TSQueryCounter", {
                 }
             }
 
-            var ancestorFilter = this.getPlugin('ancestorFilterPlugin').getFilterForType(artifactType);
-            if (ancestorFilter) {
-                filters = filters.and(ancestorFilter);
-            }
-            promises.push(this._loadRecordCount(artifactType, filters || [], id));
+            var promise = this.getPlugin('ancestorFilterPlugin').getFilterForType(artifactType).then({
+                scope: this,
+                success: function(ancestorFilter) {
+                    if (ancestorFilter) {
+                        filters = filters.and(ancestorFilter);
+                    }
+                    return this._loadRecordCount(artifactType, filters || [], id)
+                }
+            });
+
+            promises.push(promise);
 
         }, this);
 
