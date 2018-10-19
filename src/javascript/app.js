@@ -49,6 +49,10 @@ Ext.define("TSQueryCounter", {
     plugins: [{
         ptype: 'UtilsAncestorPiAppFilter',
         pluginId: 'ancestorFilterPlugin',
+        settingsConfig: {
+            labelWidth: 150,
+            margin: 10
+        }
     }],
 
     currentValues: [],
@@ -203,15 +207,11 @@ Ext.define("TSQueryCounter", {
                 }
             }
 
-            var promise = this.getPlugin('ancestorFilterPlugin').getFilterForType(artifactType).then({
-                scope: this,
-                success: function(ancestorFilter) {
-                    if (ancestorFilter) {
-                        filters = filters.and(ancestorFilter);
-                    }
-                    return this._loadRecordCount(artifactType, filters || [], id)
-                }
-            });
+            var ancestorFilter = this.getPlugin('ancestorFilterPlugin').getFilterForType(artifactType);
+            if (ancestorFilter) {
+                filters = filters.and(ancestorFilter);
+            }
+            var promise = this._loadRecordCount(artifactType, filters || [], id)
 
             promises.push(promise);
 
