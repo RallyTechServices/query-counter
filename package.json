@@ -1,6 +1,6 @@
 {
   "name": "query-counter",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "scripts": {
     "debug": "grunt debug",
     "debug:watch": "nodemon --exec grunt debug",
@@ -9,7 +9,7 @@
     "deploy-debugsdk:watch": "nodemon --exec grunt deploy-debugsdk"
   },
   "dependencies": {
-    "@agile-central-technical-services/utils-ancestor-pi-app-filter": "^2.0.4",
+    "@agile-central-technical-services/utils-ancestor-pi-app-filter": "^3.0.0",
     "@agile-central-technical-services/utils-file-utils": "^1.0.0"
   },
   "devDependencies": {

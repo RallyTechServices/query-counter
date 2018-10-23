@@ -2,7 +2,7 @@ Ext.define("TSQueryCounter", {
     extend: 'Rally.app.App',
     componentCls: 'app',
     logger: new Rally.technicalservices.Logger(),
-    defaults: { margin: 10 },
+    //defaults: { margin: '0 0 10 0' },
     items: [{
             xtype: 'container',
             layout: {
@@ -11,10 +11,13 @@ Ext.define("TSQueryCounter", {
             },
             items: [{
                 id: Utils.AncestorPiAppFilter.RENDER_AREA_ID,
-                xtype: 'container'
-            }, {
                 xtype: 'container',
-                flex: 1
+                flex: 1,
+                layout: {
+                    type: 'hbox',
+                    align: 'middle',
+                    defaultMargins: '0 10 10 0',
+                }
             }, {
                 xtype: 'rallybutton',
                 style: { 'float': 'right' },
@@ -46,32 +49,37 @@ Ext.define("TSQueryCounter", {
         }
     },
 
-    plugins: [{
-        ptype: 'UtilsAncestorPiAppFilter',
-        pluginId: 'ancestorFilterPlugin',
-        settingsConfig: {
-            labelWidth: 150,
-            margin: 10
-        }
-    }],
-
     currentValues: [],
 
     launch: function() {
         var exportButton = this.down('#export-menu-button')
         exportButton.on('click', this._onExport, this);
-
-        // Update the counters when the filters change
-        var ancestorFilterPlugin = this.getPlugin('ancestorFilterPlugin');
-        ancestorFilterPlugin.on('select', function() {
-            this._runApp();
-        }, this);
-
         this._validateSettings();
-        this._reloadModel().then({
-            scope: this,
-            success: this._runApp
+
+        var ancestorFilterPlugin = Ext.create('Utils.AncestorPiAppFilter', {
+            ptype: 'UtilsAncestorPiAppFilter',
+            pluginId: 'ancestorFilterPlugin',
+            settingsConfig: {
+                labelWidth: 150,
+                margin: 10
+            },
+            listeners: {
+                scope: this,
+                ready: function(plugin) {
+                    plugin.addListener({
+                        scope: this,
+                        select: function() {
+                            this._runApp();
+                        }
+                    });
+                    this._reloadModel().then({
+                        scope: this,
+                        success: this._runApp
+                    });
+                },
+            }
         });
+        this.addPlugin(ancestorFilterPlugin);
     },
 
     _onExport: function() {

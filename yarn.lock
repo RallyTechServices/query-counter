@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@agile-central-technical-services/utils-ancestor-pi-app-filter@^2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@agile-central-technical-services/utils-ancestor-pi-app-filter/-/utils-ancestor-pi-app-filter-2.0.4.tgz#a80847b112b41677cd26efe22a2a34567480419f"
+"@agile-central-technical-services/utils-ancestor-pi-app-filter@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@agile-central-technical-services/utils-ancestor-pi-app-filter/-/utils-ancestor-pi-app-filter-3.0.0.tgz#ddcf9eed9b13154b0b39168db416bf41feb2dc65"
 
 "@agile-central-technical-services/utils-file-utils@^1.0.0":
   version "1.0.0"
