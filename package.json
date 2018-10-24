@@ -1,6 +1,6 @@
 {
   "name": "query-counter",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "scripts": {
     "debug": "grunt debug",
     "debug:watch": "nodemon --exec grunt debug",
