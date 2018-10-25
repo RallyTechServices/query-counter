@@ -47,6 +47,9 @@ A setting allows a portfolio item ancestor filter to be added to the page. If a 
 of that type is selected, all query values are filtered down to those that have the selected item
 as an ancestor. Types that don't have that portfolio item type as an ancestor will return 0.
 
+If placed on a page that also has a [pi-ancestor-filter-broadcaster](https://github.com/RallyTechServices/pi-ancestor-filter-broadcaster),
+and filter by ancestor portfolio item is enabled, it will listen to the broadcaster for the selected ancestor.
+
 ## Development Notes
 
 * Using the Rally rich text editor to get easy formatting, but it doesn't give
