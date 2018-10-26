@@ -7,17 +7,6 @@ Ext.define('Rally.technicalservices.querycounter.Settings', {
         var items = [];
 
         items.push({
-          id:'searchAllProjects',
-          name:'searchAllProjects',
-          fieldLabel: 'Scope Across Workspace',
-          labelAlign: 'left',
-          xtype:'rallycheckboxfield',
-          labelWidth: 150,
-          margin: 10,
-          hidden: !config.showSearchAllProjects
-        });
-
-        items.push({
           name:'countVariables',
           fieldLabel: null,
           labelAlign: 'top',

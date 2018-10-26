@@ -44,7 +44,6 @@ Ext.define("TSQueryCounter", {
                 query: '( ObjectID > 0 )',
                 id: 'storyCount'
             }],
-            searchAllProjects: false,
             html: 'Defects: {defectCount} or Stories: {storyCount}<br/><br/><em>Use the gear to make App Settings...</em>'
         }
     },
@@ -56,7 +55,7 @@ Ext.define("TSQueryCounter", {
         exportButton.on('click', this._onExport, this);
         this._validateSettings();
 
-        var ancestorFilterPlugin = Ext.create('Utils.AncestorPiAppFilter', {
+        this.ancestorFilterPlugin = Ext.create('Utils.AncestorPiAppFilter', {
             ptype: 'UtilsAncestorPiAppFilter',
             pluginId: 'ancestorFilterPlugin',
             settingsConfig: {
@@ -79,7 +78,7 @@ Ext.define("TSQueryCounter", {
                 },
             }
         });
-        this.addPlugin(ancestorFilterPlugin);
+        this.addPlugin(this.ancestorFilterPlugin);
     },
 
     _onExport: function() {
@@ -215,7 +214,7 @@ Ext.define("TSQueryCounter", {
                 }
             }
 
-            var ancestorFilter = this.getPlugin('ancestorFilterPlugin').getFilterForType(artifactType);
+            var ancestorFilter = this.ancestorFilterPlugin.getFilterForType(artifactType);
             if (ancestorFilter) {
                 filters = filters.and(ancestorFilter);
             }
@@ -321,14 +320,12 @@ Ext.define("TSQueryCounter", {
     },
 
     searchAllProjects: function() {
-        var searchAllProjects = this.getSetting('searchAllProjects');
-        return this.isMilestoneScoped() && searchAllProjects;
+        return this.ancestorFilterPlugin.getIgnoreProjectScope();
     },
 
     getSettingsFields: function() {
         return Rally.technicalservices.querycounter.Settings.getFields({
-            width: this.getWidth(),
-            showSearchAllProjects: this.isMilestoneScoped()
+            width: this.getWidth()
         });
     }
 
