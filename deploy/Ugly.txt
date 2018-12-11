@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>query-counter-1.1.7</title>
+    <title>query-counter-1.1.8</title>
     <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Nov 14 2018 22:12:45 GMT+0000 (UTC) -->
+    <!--  Build Date: Tue Dec 11 2018 22:38:57 GMT+0000 (UTC) -->
 
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Nov 14 2018 22:12:45 GMT+0000 (UTC)";
-        var CHECKSUM = 58134332865;
+        var APP_BUILD_DATE = "Tue Dec 11 2018 22:38:57 GMT+0000 (UTC)";
+        var CHECKSUM = 58134327385;
     </script>
 
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>

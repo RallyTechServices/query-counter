@@ -6,6 +6,10 @@
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@agile-central-technical-services/utils-ancestor-pi-app-filter/-/utils-ancestor-pi-app-filter-2.3.0.tgz#a68091b3df7ffbc2f3970518e4e5129ee5bf128b"
 
+"@agile-central-technical-services/utils-ancestor-pi-inline-filter@^1.0.13":
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/@agile-central-technical-services/utils-ancestor-pi-inline-filter/-/utils-ancestor-pi-inline-filter-1.0.13.tgz#6ffdeea1ec43e9b64353d73766f39c2a7c4e5afb"
+
 "@agile-central-technical-services/utils-file-utils@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@agile-central-technical-services/utils-file-utils/-/utils-file-utils-1.0.0.tgz#77be39e0fbbce10f8f333e331265a7cf077f0932"
